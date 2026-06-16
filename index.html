@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rasad</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+header { padding: 20px 40px; border-bottom: 1px solid #1e1e2e; display: flex; align-items: center; gap: 12px; }
+header h1 { font-size: 22px; font-weight: 500; letter-spacing: 2px; color: #c8b8ff; }
+header span { font-size: 12px; color: #666; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 30px 40px; }
+.card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 10px; padding: 24px; }
+.card h2 { font-size: 13px; letter-spacing: 1px; color: #888; margin-bottom: 16px; text-transform: uppercase; }
+.card p { font-size: 14px; line-height: 1.8; color: #ccc; }
+.tag { display: inline-block; background: #1a1a2e; border: 1px solid #2e2e4e; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: #a0a0c0; margin: 4px 4px 0 0; }
+.status { font-size: 11px; color: #555; margin-top: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RASAD</h1>
+  <span>istihbarat platformu — v0.1</span>
+</header>
+<div class="grid">
+  <div class="card">
+    <h2>Emtia İzleme</h2>
+    <p>Altın ve gümüş piyasaları — tarihsel kıyaslar, ülke bazlı hareketler ve olası senaryolar.</p>
+    <br>
+    <span class="tag">Altın</span>
+    <span class="tag">Gümüş</span>
+    <span class="tag">Merkez Bankaları</span>
+    <div class="status">Veri bağlantısı kurulmadı</div>
+  </div>
+  <div class="card">
+    <h2>Çatışma Haritası</h2>
+    <p>Rusya-Ukrayna, İran-ABD, İsrail ve diğer aktif çatışma bölgelerinde güncel durum ve projeksiyon.</p>
+    <br>
+    <span class="tag">Rusya-Ukrayna</span>
+    <span class="tag">İran</span>
+    <span class="tag">İsrail</span>
+    <div class="status">Veri bağlantısı kurulmadı</div>
+  </div>
+</div>
+</body>
+</html>
