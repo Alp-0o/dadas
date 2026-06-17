@@ -40,9 +40,19 @@ header span { font-size: 12px; color: #666; }
     <span class="tag">Rusya-Ukrayna</span>
     <span class="tag">İran</span>
    <span class="tag">İsrail</span>
-   <div class="status">Veri bağlantısı kurulmadı</div>
+  <div class="status" id="catisma-status">Yükleniyor...</div>
   </div>
 </div>
+  const newsApiKey = "2f8b2f071d6e42c4bf5bc4bf4986d27c";
+fetch(`https://newsapi.org/v2/everything?q=Russia Ukraine OR Iran Israel&sortBy=publishedAt&pageSize=3&apiKey=${newsApiKey}`)
+  .then(response => response.json())
+  .then(data => {
+    const headlines = data.articles.map(a => a.title).join(" • ");
+    document.getElementById("catisma-status").innerText = headlines;
+  })
+  .catch(error => {
+    document.getElementById("catisma-status").innerText = "Veri çekilemedi";
+  });
   <script>
 const apiKey = "WD0UFSD8QVKCLCOVVWHY955OVVWHY";
 fetch(`https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`)
