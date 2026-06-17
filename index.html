@@ -52,7 +52,7 @@ const cachedNewsDate = localStorage.getItem("news_date");
 if (cachedNews && cachedNewsDate === todayNews) {
   document.getElementById("catisma-status").innerText = cachedNews;
 } else {
-  fetch(`https://gnews.io/api/v4/search?q=Russia Ukraine OR Iran Israel&lang=en&max=3&apikey=${gnewsApiKey}`)
+  fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://gnews.io/api/v4/search?q=Russia Ukraine OR Iran Israel&lang=en&max=3&apikey=${gnewsApiKey}`)}`)
     .then(response => response.json())
     .then(data => {
       const headlines = data.articles.map(a => a.title).join(" • ");
