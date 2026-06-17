@@ -31,7 +31,7 @@ header span { font-size: 12px; color: #666; }
     <span class="tag">Altın</span>
     <span class="tag">Gümüş</span>
     <span class="tag">Merkez Bankaları</span>
-    <div class="status">Veri bağlantısı kurulmadı</div>
+    <div class="status" id="emtia-status">Yükleniyor...</div>
   </div>
   <div class="card">
     <h2>Çatışma Haritası</h2>
@@ -39,9 +39,23 @@ header span { font-size: 12px; color: #666; }
     <br>
     <span class="tag">Rusya-Ukrayna</span>
     <span class="tag">İran</span>
-    <span class="tag">İsrail</span>
-    <div class="status">Veri bağlantısı kurulmadı</div>
+   <span class="tag">İsrail</span>
+   <div class="status">Veri bağlantısı kurulmadı</div>
   </div>
 </div>
+  <script>
+const apiKey = "WD0UFSD8QVKCLCOVVWHY955OVVWHY";
+fetch(`https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`)
+  .then(response => response.json())
+  .then(data => {
+    const gold = data.metals.gold;
+    const silver = data.metals.silver;
+    document.getElementById("emtia-status").innerText = 
+      `Altın: $${gold} | Gümüş: $${silver} (canlı)`;
+  })
+  .catch(error => {
+    document.getElementById("emtia-status").innerText = "Veri çekilemedi";
+  });
+</script>
 </body>
 </html>
