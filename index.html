@@ -43,6 +43,7 @@ header span { font-size: 12px; color: #666; }
   <div class="status" id="catisma-status">Yükleniyor...</div>
   </div>
 </div>
+  <script>
   const newsApiKey = "2f8b2f071d6e42c4bf5bc4bf4986d27c";
 fetch(`https://newsapi.org/v2/everything?q=Russia Ukraine OR Iran Israel&sortBy=publishedAt&pageSize=3&apiKey=${newsApiKey}`)
   .then(response => response.json())
