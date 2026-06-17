@@ -54,19 +54,30 @@ fetch(`https://newsapi.org/v2/everything?q=Russia Ukraine OR Iran Israel&sortBy=
   .catch(error => {
     document.getElementById("catisma-status").innerText = "Veri çekilemedi";
   });
-  <script>
+</script>
+<script>
 const apiKey = "WD0UFSD8QVKCLCOVVWHY955OVVWHY";
-fetch(`https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`)
-  .then(response => response.json())
-  .then(data => {
-    const gold = data.metals.gold;
-    const silver = data.metals.silver;
-    document.getElementById("emtia-status").innerText = 
-      `Altın: $${gold} | Gümüş: $${silver} (canlı)`;
-  })
-  .catch(error => {
-    document.getElementById("emtia-status").innerText = "Veri çekilemedi";
-  });
+const today = new Date().toDateString();
+const cached = localStorage.getItem("metals_data");
+const cachedDate = localStorage.getItem("metals_date");
+
+if (cached && cachedDate === today) {
+  document.getElementById("emtia-status").innerText = cached;
+} else {
+  fetch(`https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`)
+    .then(response => response.json())
+    .then(data => {
+      const gold = data.metals.gold;
+      const silver = data.metals.silver;
+      const text = `Altın: $${gold} | Gümüş: $${silver} (canlı)`;
+      document.getElementById("emtia-status").innerText = text;
+      localStorage.setItem("metals_data", text);
+      localStorage.setItem("metals_date", today);
+    })
+    .catch(error => {
+      document.getElementById("emtia-status").innerText = "Veri çekilemedi";
+    });
+}
 </script>
 </body>
 </html>
