@@ -51,7 +51,7 @@ const cachedNewsDate = localStorage.getItem("news_date");
 if (cachedNews && cachedNewsDate === todayNews) {
   document.getElementById("catisma-status").innerText = cachedNews;
 } else {
-fetch(`https://r.rasad-news-proxy.workers.dev/?q=Russia Ukraine OR Iran Israel&lang=en&max=3`)
+fetch(`https://r.rasad-news-proxy.workers.dev/news?q=Russia Ukraine OR Iran Israel&lang=en&max=3`)
     .then(response => response.json())
     .then(data => {
       const headlines = data.articles.map(a => a.title).join(" • ");
@@ -65,7 +65,6 @@ fetch(`https://r.rasad-news-proxy.workers.dev/?q=Russia Ukraine OR Iran Israel&l
 }
 </script>
 <script>
-const apiKey = "xxxx";
 const today = new Date().toDateString();
 const cached = localStorage.getItem("metals_data");
 const cachedDate = localStorage.getItem("metals_date");
@@ -73,7 +72,7 @@ const cachedDate = localStorage.getItem("metals_date");
 if (cached && cachedDate === today) {
   document.getElementById("emtia-status").innerText = cached;
 } else {
-  fetch(`https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`)
+  fetch(`https://r.rasad-news-proxy.workers.dev/metals`)
     .then(response => response.json())
     .then(data => {
       const gold = data.metals.gold;
