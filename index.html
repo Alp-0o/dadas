@@ -16,6 +16,8 @@ header span { font-size: 12px; color: #666; }
 .card p { font-size: 14px; line-height: 1.8; color: #ccc; }
 .tag { display: inline-block; background: #1a1a2e; border: 1px solid #2e2e4e; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: #a0a0c0; margin: 4px 4px 0 0; }
 .status { font-size: 11px; color: #555; margin-top: 16px; }
+.yorum { font-size: 12px; color: #9b8ec4; margin-top: 12px; padding: 10px 12px; background: #13102a; border-left: 2px solid #4a3a8a; border-radius: 4px; line-height: 1.6; }
+.yorum-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -32,6 +34,10 @@ header span { font-size: 12px; color: #666; }
     <span class="tag">Gümüş</span>
     <span class="tag">Merkez Bankaları</span>
     <div class="status" id="emtia-status">Yükleniyor...</div>
+    <div class="yorum" id="emtia-yorum" style="display:none">
+      <div class="yorum-label">AI Yorum</div>
+      <div id="emtia-yorum-text">...</div>
+    </div>
   </div>
   <div class="card">
     <h2>Çatışma Haritası</h2>
@@ -39,41 +45,69 @@ header span { font-size: 12px; color: #666; }
     <br>
     <span class="tag">Rusya-Ukrayna</span>
     <span class="tag">İran</span>
-   <span class="tag">İsrail</span>
-  <div class="status" id="catisma-status">Yükleniyor...</div>
+    <span class="tag">İsrail</span>
+    <div class="status" id="catisma-status">Yükleniyor...</div>
+    <div class="yorum" id="catisma-yorum" style="display:none">
+      <div class="yorum-label">AI Yorum</div>
+      <div id="catisma-yorum-text">...</div>
+    </div>
   </div>
 </div>
-  <script>
-const todayNews = new Date().toDateString();
+
+<script>
+const WORKER = "https://r.rasad-news-proxy.workers.dev";
+const today = new Date().toDateString();
+
+// --- ÇATIŞMA HABERLERİ ---
 const cachedNews = localStorage.getItem("news_data");
 const cachedNewsDate = localStorage.getItem("news_date");
 
-if (cachedNews && cachedNewsDate === todayNews) {
+if (cachedNews && cachedNewsDate === today) {
   document.getElementById("catisma-status").innerText = cachedNews;
 } else {
-fetch(`https://r.rasad-news-proxy.workers.dev/news?q=Russia Ukraine OR Iran Israel&lang=en&max=3`)
-    .then(response => response.json())
+  fetch(`${WORKER}/news?q=Russia Ukraine OR Iran Israel&lang=en&max=3`)
+    .then(r => r.json())
     .then(data => {
       const headlines = data.articles.map(a => a.title).join(" • ");
       document.getElementById("catisma-status").innerText = headlines;
       localStorage.setItem("news_data", headlines);
-      localStorage.setItem("news_date", todayNews);
+      localStorage.setItem("news_date", today);
     })
-    .catch(error => {
+    .catch(() => {
       document.getElementById("catisma-status").innerText = "Veri çekilemedi";
     });
 }
-</script>
-<script>
-const today = new Date().toDateString();
-const cached = localStorage.getItem("metals_data");
-const cachedDate = localStorage.getItem("metals_date");
 
-if (cached && cachedDate === today) {
-  document.getElementById("emtia-status").innerText = cached;
+// --- ÇATIŞMA AI YORUM ---
+const cachedNewsComment = localStorage.getItem("news_comment");
+const cachedNewsCommentDate = localStorage.getItem("news_comment_date");
+
+if (cachedNewsComment && cachedNewsCommentDate === today) {
+  document.getElementById("catisma-yorum-text").innerText = cachedNewsComment;
+  document.getElementById("catisma-yorum").style.display = "block";
 } else {
-  fetch(`https://r.rasad-news-proxy.workers.dev/metals`)
-    .then(response => response.json())
+  fetch(`${WORKER}/news-comment`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.comment) {
+        document.getElementById("catisma-yorum-text").innerText = data.comment;
+        document.getElementById("catisma-yorum").style.display = "block";
+        localStorage.setItem("news_comment", data.comment);
+        localStorage.setItem("news_comment_date", today);
+      }
+    })
+    .catch(() => {});
+}
+
+// --- EMTİA FİYATI ---
+const cachedMetals = localStorage.getItem("metals_data");
+const cachedMetalsDate = localStorage.getItem("metals_date");
+
+if (cachedMetals && cachedMetalsDate === today) {
+  document.getElementById("emtia-status").innerText = cachedMetals;
+} else {
+  fetch(`${WORKER}/metals`)
+    .then(r => r.json())
     .then(data => {
       const gold = data.metals.gold;
       const silver = data.metals.silver;
@@ -82,9 +116,30 @@ if (cached && cachedDate === today) {
       localStorage.setItem("metals_data", text);
       localStorage.setItem("metals_date", today);
     })
-    .catch(error => {
+    .catch(() => {
       document.getElementById("emtia-status").innerText = "Veri çekilemedi";
     });
+}
+
+// --- EMTİA AI YORUM ---
+const cachedMetalsComment = localStorage.getItem("metals_comment");
+const cachedMetalsCommentDate = localStorage.getItem("metals_comment_date");
+
+if (cachedMetalsComment && cachedMetalsCommentDate === today) {
+  document.getElementById("emtia-yorum-text").innerText = cachedMetalsComment;
+  document.getElementById("emtia-yorum").style.display = "block";
+} else {
+  fetch(`${WORKER}/metals-comment`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.comment) {
+        document.getElementById("emtia-yorum-text").innerText = data.comment;
+        document.getElementById("emtia-yorum").style.display = "block";
+        localStorage.setItem("metals_comment", data.comment);
+        localStorage.setItem("metals_comment_date", today);
+      }
+    })
+    .catch(() => {});
 }
 </script>
 </body>
