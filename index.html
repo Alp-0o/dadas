@@ -44,7 +44,6 @@ header span { font-size: 12px; color: #666; }
   </div>
 </div>
   <script>
-const gnewsApiKey = "xxxx";
 const todayNews = new Date().toDateString();
 const cachedNews = localStorage.getItem("news_data");
 const cachedNewsDate = localStorage.getItem("news_date");
@@ -52,7 +51,7 @@ const cachedNewsDate = localStorage.getItem("news_date");
 if (cachedNews && cachedNewsDate === todayNews) {
   document.getElementById("catisma-status").innerText = cachedNews;
 } else {
-fetch(`https://gnews.io/api/v4/search?q=Russia Ukraine OR Iran Israel&lang=en&max=3&apikey=${gnewsApiKey}`)
+fetch(`https://r.rasad-news-proxy.workers.dev/?q=Russia Ukraine OR Iran Israel&lang=en&max=3`)
     .then(response => response.json())
     .then(data => {
       const headlines = data.articles.map(a => a.title).join(" • ");
