@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rusya-Ukrayna Savaşı — Rasad</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+
+header { padding: 20px 40px; border-bottom: 1px solid #1e1e2e; display: flex; align-items: center; gap: 12px; }
+header h1 { font-size: 22px; font-weight: 500; letter-spacing: 2px; color: #c8b8ff; }
+header h1 a { color: inherit; text-decoration: none; }
+header span { font-size: 12px; color: #666; }
+
+.breadcrumb { padding: 14px 40px; font-size: 12px; color: #555; border-bottom: 1px solid #1e1e2e; }
+.breadcrumb a { color: #7a6aaa; text-decoration: none; }
+.breadcrumb a:hover { color: #c8b8ff; }
+
+.hero { padding: 40px 40px 24px; border-bottom: 1px solid #1e1e2e; }
+.hero h2 { font-size: 28px; font-weight: 600; color: #e8e0ff; letter-spacing: 1px; margin-bottom: 10px; }
+.meta { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.meta-item { font-size: 12px; color: #666; }
+.badge { display: inline-block; background: #2a1a1a; border: 1px solid #5a2a2a; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: #e07070; letter-spacing: 1px; }
+
+.content { max-width: 860px; padding: 0 40px 60px; }
+
+.section { margin-top: 40px; }
+.section-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #666; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #1e1e2e; }
+.section-body { font-size: 14px; line-height: 1.9; color: #ccc; }
+.section-body p { margin-bottom: 12px; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 4px; }
+.col-card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 16px; }
+.col-card h4 { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.col-card.rusya h4 { color: #e07070; }
+.col-card.ukrayna h4 { color: #70a8e0; }
+.col-card ul { list-style: none; padding: 0; }
+.col-card ul li { font-size: 13px; color: #bbb; padding: 4px 0; border-bottom: 1px solid #1a1a2e; }
+.col-card ul li:last-child { border-bottom: none; }
+.col-card ul li span { font-size: 11px; color: #555; display: block; }
+
+.scenario-list { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; }
+.scenario { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 16px; }
+.scenario-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.scenario-label.dusuk { color: #70e070; }
+.scenario-label.orta { color: #e0c070; }
+.scenario-label.yuksek { color: #e07070; }
+.scenario p { font-size: 13px; color: #bbb; line-height: 1.7; }
+
+.footer-meta { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1e1e2e; font-size: 11px; color: #444; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><a href="../index.html">RASAD</a></h1>
+  <span>istihbarat platformu — v0.1</span>
+</header>
+
+<div class="breadcrumb">
+  <a href="../index.html">Ana Sayfa</a> › Çatışma Dosyaları › Rusya-Ukrayna Savaşı
+</div>
+
+<div class="hero">
+  <h2>Rusya-Ukrayna Savaşı</h2>
+  <div class="meta">
+    <span class="badge">AKTİF ÇATIŞMA</span>
+    <span class="meta-item">Başlangıç: 24 Şubat 2022</span>
+    <span class="meta-item">Son güncelleme: 20 Haziran 2025</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="section">
+    <div class="section-title">Son Durum</div>
+    <div class="section-body">
+      <p>
+        [Buraya son durum bilgisini yaz. Cephe hattı, son gelişmeler, önemli olaylar.]
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Kim Hangi Tarafı Tutuyor</div>
+    <div class="two-col">
+      <div class="col-card rusya">
+        <h4>Rusya Bloğu</h4>
+        <ul>
+          <li>Belarus <span>Lojistik destek, üs kullanımı</span></li>
+          <li>İran <span>İnsansız hava aracı tedariki</span></li>
+          <li>Kuzey Kore <span>Mühimmat ve asker desteği</span></li>
+          <li>[Ülke ekle] <span>[Destek türü]</span></li>
+        </ul>
+      </div>
+      <div class="col-card ukrayna">
+        <h4>Ukrayna Bloğu</h4>
+        <ul>
+          <li>ABD <span>Askeri ve mali yardım</span></li>
+          <li>AB <span>Silah, yaptırım, finansman</span></li>
+          <li>İngiltere <span>Eğitim, silah sistemleri</span></li>
+          <li>[Ülke ekle] <span>[Destek türü]</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Etkilenen Ülkeler ve Ekonomiler</div>
+    <div class="section-body">
+      <p>
+        [Buraya savaşın küresel ekonomik ve siyasi etkilerini yaz. Enerji, tahıl, savunma harcamaları, göç vb.]
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Gelecek Senaryoları</div>
+    <div class="scenario-list">
+      <div class="scenario">
+        <div class="scenario-label dusuk">Düşük Olasılık</div>
+        <p>[Senaryo açıklaması — örn. hızlı ateşkes ve barış müzakereleri]</p>
+      </div>
+      <div class="scenario">
+        <div class="scenario-label orta">Orta Olasılık</div>
+        <p>[Senaryo açıklaması — örn. donmuş çatışma, statüko devam eder]</p>
+      </div>
+      <div class="scenario">
+        <div class="scenario-label yuksek">Yüksek Olasılık</div>
+        <p>[Senaryo açıklaması — örn. uzun süreli savaş, yavaş toprak değişimi]</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    Bu dosya manuel olarak güncellenmektedir. İçerik analist değerlendirmesine dayanır.
+  </div>
+
+</div>
+</body>
+</html>
