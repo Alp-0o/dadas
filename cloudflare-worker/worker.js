@@ -108,32 +108,53 @@ async function handleRusyaUkraynaContent(env) {
     .map((a, i) => `${i + 1}. ${a.title} — ${a.description || ""}`)
     .join("\n");
 
-  const prompt = `Aşağıdaki Rusya-Ukrayna savaşına ait haber başlıkları ve açıklamalarını analiz et. Yalnızca aşağıdaki JSON formatında Türkçe içerik üret. JSON dışında hiçbir şey yazma, açıklama ekleme.
+  const prompt = `Sen bir jeopolitik analistsin. Aşağıdaki haberleri analiz ederek Türkçe istihbarat dosyası üret.
+
+Analiz kuralları:
+1. KAYNAK: Her bilgi için "kim neden paylaştı?" diye sor. Resmi açıklama mı, sızıntı mı, propaganda mı? Belirsizse belirt.
+2. ALAN: Her gelişmenin alanını kısaca belirt: [askeri] [ekonomik] [siyasi] [siber] gibi.
+3. KANIT: Somut ve doğrulanabilir kanıtı olmayan iddiaları "söylem" veya "iddia" olarak işaretle — kesin gerçekmiş gibi sunma.
 
 Haberler:
 ${newsText}
 
-Döndür (yalnızca geçerli JSON):
+Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçbir şey yazma.
+
 {
-  "ozet": "Savaşın güncel durumunu özetleyen 2-3 cümle.",
-  "son_durum": "Son gelişmeleri aktaran 2-3 cümle.",
+  "ozet": "En az 150 kelime. Savaşın genel bağlamını, mevcut dinamikleri ve kritik gelişmeleri açıkla. Hangi alanda (askeri/siyasi/ekonomik) öne çıkan gelişmeler var? Kaynakların güvenilirliğine dair genel bir not ekle.",
+  "son_durum": "En az 100 kelime. Güncel cephe durumu, son haftalarda yaşanan somut gelişmeler. Doğrulanmamış iddiaları 'iddia' olarak işaretle.",
   "kronoloji": [
-    {"tarih": "Ay Yıl", "olay": "Kısa olay açıklaması"},
-    {"tarih": "Ay Yıl", "olay": "Kısa olay açıklaması"},
-    {"tarih": "Ay Yıl", "olay": "Kısa olay açıklaması"}
+    {"tarih": "Ay Yıl", "olay": "Alan etiketi ve olay açıklaması. Kaynak belirsizse 'iddia' ekle."},
+    {"tarih": "Ay Yıl", "olay": "..."},
+    {"tarih": "Ay Yıl", "olay": "..."},
+    {"tarih": "Ay Yıl", "olay": "..."},
+    {"tarih": "Ay Yıl", "olay": "..."}
+  ],
+  "rusya_taraf": [
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "Bu desteğin niteliği, kaynağı ve doğrulanabilirliği hakkında 2-3 cümle."},
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "..."},
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "..."}
+  ],
+  "ukrayna_taraf": [
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "Bu desteğin niteliği, kaynağı ve doğrulanabilirliği hakkında 2-3 cümle."},
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "..."},
+    {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "..."}
   ],
   "etkilenenler": [
-    {"baslik": "Etkilenen taraf adı", "aciklama": "Nasıl etkilendiği, 1-2 cümle."},
-    {"baslik": "Etkilenen taraf adı", "aciklama": "Nasıl etkilendiği, 1-2 cümle."}
+    {"baslik": "Avrupa Enerji Piyasaları", "aciklama": "En az 3 cümle. Somut etkiler, doğrulanmış veriler önce, iddialar sonra."},
+    {"baslik": "Küresel Tahıl Piyasaları", "aciklama": "En az 3 cümle."},
+    {"baslik": "Ukrayna Sivil Halkı", "aciklama": "En az 3 cümle."},
+    {"baslik": "NATO ve Batı Savunma Sektörü", "aciklama": "En az 3 cümle."},
+    {"baslik": "Rusya Ekonomisi", "aciklama": "En az 3 cümle."}
   ],
   "senaryolar": [
-    {"olasilik": "yüksek", "aciklama": "Senaryo açıklaması.", "veri": "Bu senaryoyu destekleyen göstergeler."},
-    {"olasilik": "orta", "aciklama": "Senaryo açıklaması.", "veri": "Bu senaryoyu destekleyen göstergeler."},
-    {"olasilik": "düşük", "aciklama": "Senaryo açıklaması.", "veri": "Bu senaryoyu destekleyen göstergeler."}
+    {"olasilik": "yüksek", "aciklama": "En az 80 kelime. Senaryo neden olası? Hangi somut göstergeler bunu destekliyor?", "veri": "Dayandığı doğrulanabilir göstergeler."},
+    {"olasilik": "orta", "aciklama": "En az 80 kelime. Senaryo neden mümkün ama belirsiz?", "veri": "Dayandığı göstergeler."},
+    {"olasilik": "düşük", "aciklama": "En az 80 kelime. Neden düşük olasılıklı? Hangi şartlarda gerçekleşebilir?", "veri": "Dayandığı göstergeler."}
   ]
 }`;
 
-  const raw = await groqFetch(env, prompt, 1000);
+  const raw = await groqFetch(env, prompt, 2000);
 
   let content;
   try {

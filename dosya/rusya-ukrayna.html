@@ -202,33 +202,25 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 7. DESTEKÇİLER — Manuel -->
+    <!-- 7. DESTEKÇİLER — AI -->
     <div class="section" id="destekcilder">
       <div class="section-header">
         <span class="section-num">07</span>
         <span class="section-title">Destekçiler</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <div class="destekci-list">
-        <div class="destekci">
-          <div class="destekci-header">
-            <span class="destekci-ulke">ABD</span>
-            <span class="destekci-tip">Ukrayna Tarafı · Askeri + Mali</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e07070;margin-bottom:10px">Rusya Tarafı</div>
+          <div class="destekci-list" id="rusya-taraf-list">
+            <div class="destekci"><p class="loading">Yükleniyor...</p></div>
           </div>
-          <p>[ABD'nin Ukrayna'ya sağladığı desteğin detayları.]</p>
         </div>
-        <div class="destekci">
-          <div class="destekci-header">
-            <span class="destekci-ulke">İran</span>
-            <span class="destekci-tip">Rusya Tarafı · Silah</span>
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#70a8e0;margin-bottom:10px">Ukrayna Tarafı</div>
+          <div class="destekci-list" id="ukrayna-taraf-list">
+            <div class="destekci"><p class="loading">Yükleniyor...</p></div>
           </div>
-          <p>[İran'ın Rusya'ya sağladığı desteğin detayları.]</p>
-        </div>
-        <div class="destekci">
-          <div class="destekci-header">
-            <span class="destekci-ulke">[Ülke]</span>
-            <span class="destekci-tip">[Taraf] · [Destek Türü]</span>
-          </div>
-          <p>[Destek detayları.]</p>
         </div>
       </div>
     </div>
@@ -312,6 +304,30 @@ function renderContent(data) {
       <div class="kronoloji-item">
         <span class="kronoloji-tarih">${k.tarih || "—"}</span>
         <span class="kronoloji-icerik">${k.olay || ""}</span>
+      </div>`).join("");
+  }
+
+  // Destekçiler — Rusya tarafı
+  if (data.rusya_taraf?.length) {
+    document.getElementById("rusya-taraf-list").innerHTML = data.rusya_taraf.map(d => `
+      <div class="destekci">
+        <div class="destekci-header">
+          <span class="destekci-ulke">${d.ulke || "—"}</span>
+          <span class="destekci-tip">${d.destek || ""}</span>
+        </div>
+        <p>${d.detay || ""}</p>
+      </div>`).join("");
+  }
+
+  // Destekçiler — Ukrayna tarafı
+  if (data.ukrayna_taraf?.length) {
+    document.getElementById("ukrayna-taraf-list").innerHTML = data.ukrayna_taraf.map(d => `
+      <div class="destekci">
+        <div class="destekci-header">
+          <span class="destekci-ulke">${d.ulke || "—"}</span>
+          <span class="destekci-tip">${d.destek || ""}</span>
+        </div>
+        <p>${d.detay || ""}</p>
       </div>`).join("");
   }
 
