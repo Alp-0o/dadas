@@ -11,7 +11,7 @@ function jsonResponse(data, status = 200) {
   });
 }
 
-async function groqFetch(env, prompt, maxTokens = 80) {
+async function groqFetch(env, prompt, maxTokens = 80, big = false) {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -19,7 +19,7 @@ async function groqFetch(env, prompt, maxTokens = 80) {
       "Authorization": `Bearer ${env.GROQ_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
+      model: big ? "llama-3.3-70b-versatile" : "llama-3.1-8b-instant",
       messages: [{ role: "user", content: prompt }],
       max_tokens: maxTokens,
       temperature: 0.3,
@@ -141,8 +141,8 @@ ${newsText}
 Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçbir şey yazma.
 
 {
-  "ozet": "En az 150 kelime. Savaşın genel bağlamını, mevcut dinamikleri ve kritik gelişmeleri açıkla. Hangi alanda (askeri/siyasi/ekonomik) öne çıkan gelişmeler var? Kaynakların güvenilirliğine dair genel bir not ekle.",
-  "son_durum": "En az 100 kelime. Güncel cephe durumu, son haftalarda yaşanan somut gelişmeler. Doğrulanmamış iddiaları 'iddia' olarak işaretle.",
+  "ozet": "3-4 cümle. Savaşın güncel bağlamı, öne çıkan alan (askeri/siyasi/ekonomik) ve kaynak güvenilirliğine dair kısa not.",
+  "son_durum": "2-3 cümle. Güncel cephe durumu ve somut gelişmeler. Doğrulanmamışları 'iddia' olarak işaretle.",
   "kronoloji": [
     {"tarih": "Ay Yıl", "olay": "Alan etiketi ve olay açıklaması. Kaynak belirsizse 'iddia' ekle."},
     {"tarih": "Ay Yıl", "olay": "..."},
@@ -161,20 +161,20 @@ Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçb
     {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "..."}
   ],
   "etkilenenler": [
-    {"baslik": "Avrupa Enerji Piyasaları", "aciklama": "En az 3 cümle. Somut etkiler, doğrulanmış veriler önce, iddialar sonra."},
-    {"baslik": "Küresel Tahıl Piyasaları", "aciklama": "En az 3 cümle."},
-    {"baslik": "Ukrayna Sivil Halkı", "aciklama": "En az 3 cümle."},
-    {"baslik": "NATO ve Batı Savunma Sektörü", "aciklama": "En az 3 cümle."},
-    {"baslik": "Rusya Ekonomisi", "aciklama": "En az 3 cümle."}
+    {"baslik": "Avrupa Enerji Piyasaları", "aciklama": "2 cümle. Somut etkiler."},
+    {"baslik": "Küresel Tahıl Piyasaları", "aciklama": "2 cümle."},
+    {"baslik": "Ukrayna Sivil Halkı", "aciklama": "2 cümle."},
+    {"baslik": "NATO ve Batı Savunma Sektörü", "aciklama": "2 cümle."},
+    {"baslik": "Rusya Ekonomisi", "aciklama": "2 cümle."}
   ],
   "senaryolar": [
-    {"olasilik": "yüksek", "aciklama": "En az 80 kelime. Senaryo neden olası? Hangi somut göstergeler bunu destekliyor?", "veri": "Dayandığı doğrulanabilir göstergeler."},
-    {"olasilik": "orta", "aciklama": "En az 80 kelime. Senaryo neden mümkün ama belirsiz?", "veri": "Dayandığı göstergeler."},
-    {"olasilik": "düşük", "aciklama": "En az 80 kelime. Neden düşük olasılıklı? Hangi şartlarda gerçekleşebilir?", "veri": "Dayandığı göstergeler."}
+    {"olasilik": "yüksek", "aciklama": "2-3 cümle. Senaryo ve destekleyen göstergeler.", "veri": "Dayandığı somut göstergeler."},
+    {"olasilik": "orta", "aciklama": "2-3 cümle. Senaryo ve koşullar.", "veri": "Dayandığı göstergeler."},
+    {"olasilik": "düşük", "aciklama": "2-3 cümle. Senaryo ve gerçekleşme koşulları.", "veri": "Dayandığı göstergeler."}
   ]
 }`;
 
-  const raw = await groqFetch(env, prompt, 2000);
+  const raw = await groqFetch(env, prompt, 2500, true);
 
   let content;
   try {
