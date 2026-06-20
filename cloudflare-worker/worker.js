@@ -104,14 +104,34 @@ async function handleRusyaUkraynaContent(env) {
   if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
   const newsData = await res.json();
 
-  const newsText = newsData.articles
-    .map((a, i) => `${i + 1}. ${a.title} — ${a.description || ""}`)
+  // Gürültü filtresi
+  const NOISE = ["world cup", "visa", "pizza", "ethanol", "biodiesel", "lng", "etanol", "celebrity", "fashion"];
+  const filtered = newsData.articles.filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)));
+
+  // Kaynak etiketleme
+  const RUSSIA_STATE = ["sputnik", "rt.com", "tass.ru", "ria.ru", "life.ru", "5-tv.ru", "runews24", "anna-news"];
+  const UKRAINE_SRC = ["unian.net", "obozrevatel.com", "glavred.info", "korrespondent.net", "24tv.ua", "delo.ua", "pravda.com.ua"];
+  const WESTERN = ["bbc.com", "reuters.com", "theguardian.com", "nytimes.com", "washingtonpost.com", "inquirer.com", "nationalpost.com", "lbc.co.uk", "dw.com", "ft.com", "politico.com"];
+
+  function tagSource(source) {
+    const s = (source || "").toLowerCase();
+    if (RUSSIA_STATE.some(x => s.includes(x))) return "rusya devlet medyası";
+    if (UKRAINE_SRC.some(x => s.includes(x))) return "ukrayna kaynağı";
+    if (WESTERN.some(x => s.includes(x))) return "batı medyası";
+    return "diğer";
+  }
+
+  const newsText = filtered
+    .map((a, i) => {
+      const tag = tagSource(a.source?.name || a.url);
+      return `${i + 1}. [${tag}] ${a.title} — ${a.description || ""}`;
+    })
     .join("\n");
 
   const prompt = `Sen bir jeopolitik analistsin. Aşağıdaki haberleri analiz ederek Türkçe istihbarat dosyası üret.
 
 Analiz kuralları:
-1. KAYNAK: Her bilgi için "kim neden paylaştı?" diye sor. Resmi açıklama mı, sızıntı mı, propaganda mı? Belirsizse belirt.
+1. KAYNAK: Her bilgiyi kaynağıyla birlikte aktar. "rusya devlet medyası" etiketli kaynakları "'X' kaynağına göre (doğrulanmamış iddia)" diye belirt. Birden fazla bağımsız kaynak aynı şeyi söylüyorsa bunu güçlü sinyal olarak değerlendir ve açıkça belirt.
 2. ALAN: Her gelişmenin alanını kısaca belirt: [askeri] [ekonomik] [siyasi] [siber] gibi.
 3. KANIT: Somut ve doğrulanabilir kanıtı olmayan iddiaları "söylem" veya "iddia" olarak işaretle — kesin gerçekmiş gibi sunma.
 
