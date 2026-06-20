@@ -113,27 +113,46 @@ async function handleRusyaUkraynaContent(env) {
   const UKRAINE_SRC = ["unian.net", "obozrevatel.com", "glavred.info", "korrespondent.net", "24tv.ua", "delo.ua", "pravda.com.ua"];
   const WESTERN = ["bbc.com", "reuters.com", "theguardian.com", "nytimes.com", "washingtonpost.com", "inquirer.com", "nationalpost.com", "lbc.co.uk", "dw.com", "ft.com", "politico.com"];
 
-  function tagSource(source) {
-    const s = (source || "").toLowerCase();
+  function getDomain(url) {
+    try { return new URL(url).hostname.replace("www.", ""); } catch { return url; }
+  }
+
+  function tagSource(domain) {
+    const s = (domain || "").toLowerCase();
     if (RUSSIA_STATE.some(x => s.includes(x))) return "rusya devlet medyası";
     if (UKRAINE_SRC.some(x => s.includes(x))) return "ukrayna kaynağı";
     if (WESTERN.some(x => s.includes(x))) return "batı medyası";
     return "diğer";
   }
 
+  function formatDate(iso) {
+    if (!iso) return "tarih bilinmiyor";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+    } catch { return iso; }
+  }
+
   const newsText = filtered
     .map((a, i) => {
-      const tag = tagSource(a.source?.name || a.url);
-      return `${i + 1}. [${tag}] ${a.title} — ${a.description || ""}`;
+      const domain = getDomain(a.url);
+      const tag = tagSource(domain);
+      const date = formatDate(a.publishedAt);
+      return `[${i + 1}] tarih:${date} | kaynak:${domain} | tip:${tag}\nbaşlık: ${a.title}\nözet: ${a.description || "-"}`;
     })
-    .join("\n");
+    .join("\n\n");
 
-  const prompt = `Sen bir jeopolitik analistsin. Aşağıdaki haberleri analiz ederek Türkçe istihbarat dosyası üret.
+  const prompt = `Sen bir jeopolitik analistsin. Aşağıdaki ${filtered.length} haber maddesi sana verilmiştir. Bu haberleri analiz ederek Türkçe istihbarat dosyası üret.
 
-Analiz kuralları:
-1. KAYNAK: Her bilgiyi kaynağıyla birlikte aktar. "rusya devlet medyası" etiketli kaynakları "'X' kaynağına göre (doğrulanmamış iddia)" diye belirt. Birden fazla bağımsız kaynak aynı şeyi söylüyorsa bunu güçlü sinyal olarak değerlendir ve açıkça belirt.
-2. ALAN: Her gelişmenin alanını kısaca belirt: [askeri] [ekonomik] [siyasi] [siber] gibi.
-3. KANIT: Somut ve doğrulanabilir kanıtı olmayan iddiaları "söylem" veya "iddia" olarak işaretle — kesin gerçekmiş gibi sunma.
+KRİTİK KURALLAR — Bu kurallara uymak zorunludur:
+- SADECE yukarıda sana verilen haberlerde açıkça geçen bilgileri kullan.
+- Kaynağını ham veriden gösteremediğin HİÇBİR iddiayı yazma. Placeholder, örnek veya hayali kaynak ASLA üretme.
+- Tarihleri yalnızca haberlerin "tarih:" alanından al. Tahmin etme, uydurmayacaksın.
+- "rusya devlet medyası" tipindeki kaynakları mutlaka "([domain] iddiasına göre, doğrulanmamış)" şeklinde işaretle.
+- Birden fazla bağımsız kaynak aynı olayı doğruluyorsa "çok kaynaklı doğrulama" olarak belirt.
+- Bilgi yoksa o alanı boş bırak veya "ham veride yeterli bilgi yok" yaz.
+
+ALAN ETİKETİ: Her gelişmeye [askeri] [ekonomik] [siyasi] [siber] etiketlerinden birini ekle.
 
 Haberler:
 ${newsText}
@@ -144,11 +163,9 @@ Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçb
   "ozet": "3-4 cümle. Savaşın güncel bağlamı, öne çıkan alan (askeri/siyasi/ekonomik) ve kaynak güvenilirliğine dair kısa not.",
   "son_durum": "2-3 cümle. Güncel cephe durumu ve somut gelişmeler. Doğrulanmamışları 'iddia' olarak işaretle.",
   "kronoloji": [
-    {"tarih": "Ay Yıl", "olay": "Alan etiketi ve olay açıklaması. Kaynak belirsizse 'iddia' ekle."},
-    {"tarih": "Ay Yıl", "olay": "..."},
-    {"tarih": "Ay Yıl", "olay": "..."},
-    {"tarih": "Ay Yıl", "olay": "..."},
-    {"tarih": "Ay Yıl", "olay": "..."}
+    {"tarih": "haberin tarih: alanından al, tahmin etme", "kaynak": "domain adı", "olay": "[alan etiketi] Olay açıklaması. Devlet medyasıysa (iddia) ekle."},
+    {"tarih": "...", "kaynak": "...", "olay": "..."},
+    {"tarih": "...", "kaynak": "...", "olay": "..."}
   ],
   "rusya_taraf": [
     {"ulke": "Ülke adı", "destek": "Destek türü", "detay": "Bu desteğin niteliği, kaynağı ve doğrulanabilirliği hakkında 2-3 cümle."},

@@ -302,7 +302,7 @@ function renderContent(data) {
   if (data.kronoloji?.length) {
     document.getElementById("kronoloji-list").innerHTML = data.kronoloji.map(k => `
       <div class="kronoloji-item">
-        <span class="kronoloji-tarih">${k.tarih || "—"}</span>
+        <span class="kronoloji-tarih">${k.tarih || "—"}${k.kaynak ? `<span style="display:block;font-size:10px;color:#3a3a5a;margin-top:2px">${k.kaynak}</span>` : ""}</span>
         <span class="kronoloji-icerik">${k.olay || ""}</span>
       </div>`).join("");
   }
