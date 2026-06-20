@@ -8,27 +8,29 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #0a0a0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
 
-/* HEADER */
 header { padding: 20px 40px; border-bottom: 1px solid #1e1e2e; display: flex; align-items: center; gap: 12px; }
 header h1 a { font-size: 22px; font-weight: 500; letter-spacing: 2px; color: #c8b8ff; text-decoration: none; }
 header span { font-size: 12px; color: #666; }
 
-/* BREADCRUMB */
 .breadcrumb { padding: 12px 40px; font-size: 12px; color: #555; border-bottom: 1px solid #1e1e2e; }
 .breadcrumb a { color: #7a6aaa; text-decoration: none; }
 .breadcrumb a:hover { color: #c8b8ff; }
 
-/* HERO */
+.ai-disclaimer {
+  background: #1a1500; border-bottom: 1px solid #3a3000;
+  padding: 10px 40px; font-size: 12px; color: #a08030;
+  display: flex; align-items: center; gap: 8px;
+}
+.ai-disclaimer strong { color: #c0a040; }
+
 .hero { padding: 36px 40px 28px; border-bottom: 1px solid #1e1e2e; }
 .hero h2 { font-size: 26px; font-weight: 600; color: #e8e0ff; letter-spacing: 1px; margin-bottom: 12px; }
 .meta { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .badge { display: inline-block; background: #2a1a1a; border: 1px solid #5a2a2a; border-radius: 4px; padding: 3px 10px; font-size: 11px; color: #e07070; letter-spacing: 1px; }
 .meta-item { font-size: 12px; color: #555; }
 
-/* LAYOUT */
-.layout { display: grid; grid-template-columns: 220px 1fr; gap: 0; min-height: calc(100vh - 160px); }
+.layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 200px); }
 
-/* SIDEBAR */
 .sidebar { border-right: 1px solid #1e1e2e; padding: 28px 20px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .sidebar-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #444; margin-bottom: 16px; }
 .sidebar nav a {
@@ -39,18 +41,20 @@ header span { font-size: 12px; color: #666; }
 .sidebar nav a:hover { color: #c8b8ff; background: #0f0f1a; border-left-color: #4a3a8a; }
 .sidebar nav a.active { color: #c8b8ff; background: #0f0f1a; border-left-color: #7a6aaa; }
 .sidebar nav .num { font-size: 10px; color: #444; margin-right: 6px; }
+.sidebar .ai-tag { font-size: 9px; color: #6a5010; background: #1a1500; border-radius: 3px; padding: 1px 5px; margin-left: 4px; }
 
-/* CONTENT */
 .content { padding: 36px 48px 80px; max-width: 780px; }
 
 .section { margin-bottom: 56px; scroll-margin-top: 24px; }
 .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #1e1e2e; }
-.section-num { font-size: 11px; color: #444; font-variant-numeric: tabular-nums; }
+.section-num { font-size: 11px; color: #444; }
 .section-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #888; }
+.section-ai-badge { font-size: 9px; color: #6a5010; background: #1a1500; border: 1px solid #3a3000; border-radius: 3px; padding: 2px 6px; margin-left: auto; }
 
 .placeholder { font-size: 14px; line-height: 1.9; color: #444; font-style: italic; border-left: 2px solid #1e1e2e; padding-left: 16px; }
+.ai-text { font-size: 14px; line-height: 1.9; color: #ccc; }
+.loading { font-size: 13px; color: #444; font-style: italic; }
 
-/* TARAFLAR */
 .taraflar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .taraf-card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 16px; }
 .taraf-card h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
@@ -58,43 +62,29 @@ header span { font-size: 12px; color: #666; }
 .taraf-card.ukrayna h4 { color: #70a8e0; }
 .taraf-card p { font-size: 13px; color: #777; line-height: 1.7; font-style: italic; }
 
-/* DESTEKÇILER */
-.destekci-list { display: flex; flex-direction: column; gap: 10px; }
-.destekci { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; }
+.destekci-list, .etkilenen-list, .senaryo-list { display: flex; flex-direction: column; gap: 10px; }
+.destekci, .etkilenen, .senaryo { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; }
 .destekci-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.destekci-ulke { font-size: 13px; font-weight: 600; color: #ccc; }
+.destekci-ulke, .etkilenen h4 { font-size: 13px; font-weight: 600; color: #ccc; margin-bottom: 6px; }
 .destekci-tip { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #555; background: #1a1a2e; border-radius: 3px; padding: 2px 7px; }
-.destekci p { font-size: 13px; color: #666; font-style: italic; }
+.destekci p, .etkilenen p { font-size: 13px; color: #777; font-style: italic; }
+.senaryo-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.senaryo-label.yuksek { color: #e07070; }
+.senaryo-label.orta { color: #e0c070; }
+.senaryo-label.dusuk { color: #70e070; }
+.senaryo p { font-size: 13px; color: #bbb; line-height: 1.8; }
+.senaryo-veri { font-size: 11px; color: #555; margin-top: 8px; }
 
-/* ETKİLENENLER */
-.etkilenen-list { display: flex; flex-direction: column; gap: 10px; }
-.etkilenen { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; }
-.etkilenen h4 { font-size: 13px; font-weight: 600; color: #ccc; margin-bottom: 6px; }
-.etkilenen p { font-size: 13px; color: #666; font-style: italic; }
-
-/* KRONOLOJİ */
-.kronoloji { display: flex; flex-direction: column; gap: 0; }
+.kronoloji { display: flex; flex-direction: column; }
 .kronoloji-item { display: grid; grid-template-columns: 110px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid #1a1a2a; }
 .kronoloji-item:last-child { border-bottom: none; }
 .kronoloji-tarih { font-size: 12px; color: #555; padding-top: 2px; }
-.kronoloji-icerik { font-size: 13px; color: #bbb; line-height: 1.7; font-style: italic; }
+.kronoloji-icerik { font-size: 13px; color: #bbb; line-height: 1.7; }
 
-/* SENARYOLAR */
-.senaryo-list { display: flex; flex-direction: column; gap: 12px; }
-.senaryo { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 18px; }
-.senaryo-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-.senaryo-label.dusuk { color: #70e070; }
-.senaryo-label.orta { color: #e0c070; }
-.senaryo-label.yuksek { color: #e07070; }
-.senaryo p { font-size: 13px; color: #bbb; line-height: 1.8; font-style: italic; }
-.senaryo-veri { font-size: 11px; color: #555; margin-top: 8px; }
-
-/* AÇIK SORULAR */
 .sorular-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .sorular-list li { font-size: 13px; color: #999; padding: 10px 14px; background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 6px; }
 .sorular-list li::before { content: "?"; color: #4a3a8a; font-weight: 700; margin-right: 10px; }
 
-/* FOOTER */
 .footer-meta { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1e1e2e; font-size: 11px; color: #333; }
 </style>
 </head>
@@ -109,47 +99,52 @@ header span { font-size: 12px; color: #666; }
   <a href="../index.html">Ana Sayfa</a> › Çatışma Dosyaları › Rusya-Ukrayna Savaşı
 </div>
 
+<div class="ai-disclaimer">
+  <strong>⚠ AI İçeriği:</strong>
+  Bu dosyadaki bazı bölümler yapay zeka tarafından güncel haberlerden otomatik olarak üretilmiştir.
+  İçerik doğrulanmamıştır — editör denetiminden geçmeden referans olarak kullanmayın.
+</div>
+
 <div class="hero">
   <h2>Rusya-Ukrayna Savaşı</h2>
   <div class="meta">
     <span class="badge">AKTİF ÇATIŞMA</span>
     <span class="meta-item">Başlangıç: 24 Şubat 2022</span>
-    <span class="meta-item">Son güncelleme: 20 Haziran 2025</span>
+    <span class="meta-item" id="guncelleme-tarihi">Yükleniyor...</span>
   </div>
 </div>
 
 <div class="layout">
 
-  <!-- SIDEBAR NAVİGASYON -->
   <aside class="sidebar">
     <div class="sidebar-title">İçindekiler</div>
     <nav>
-      <a href="#ozet"><span class="num">01</span>Olayın Özeti</a>
+      <a href="#ozet"><span class="num">01</span>Olayın Özeti<span class="ai-tag">AI</span></a>
       <a href="#taraflar"><span class="num">02</span>Taraflar</a>
       <a href="#sebepler"><span class="num">03</span>Çıkış Sebepleri</a>
-      <a href="#icraatler"><span class="num">04</span>İcraatler ve Fiiliyatlar</a>
-      <a href="#son-durum"><span class="num">05</span>Son Durum</a>
-      <a href="#kronoloji"><span class="num">06</span>Zincirleme Haberler</a>
-      <a href="#destekçiler"><span class="num">07</span>Destekçiler</a>
-      <a href="#etkilenenler"><span class="num">08</span>Etkilenenler</a>
-      <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları</a>
+      <a href="#icraatler"><span class="num">04</span>İcraatler</a>
+      <a href="#son-durum"><span class="num">05</span>Son Durum<span class="ai-tag">AI</span></a>
+      <a href="#kronoloji"><span class="num">06</span>Zincirleme Haberler<span class="ai-tag">AI</span></a>
+      <a href="#destekcilder"><span class="num">07</span>Destekçiler</a>
+      <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">AI</span></a>
+      <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları<span class="ai-tag">AI</span></a>
       <a href="#sorular"><span class="num">10</span>Açık Sorular</a>
     </nav>
   </aside>
 
-  <!-- ANA İÇERİK -->
   <main class="content">
 
-    <!-- 1. ÖZET -->
+    <!-- 1. ÖZET — AI -->
     <div class="section" id="ozet">
       <div class="section-header">
         <span class="section-num">01</span>
         <span class="section-title">Olayın Özeti</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <p class="placeholder">[Savaşın genel bir özetini buraya yaz. Ne zaman başladı, temel dinamikler neler, hangi aşamada?]</p>
+      <p class="ai-text loading" id="ozet-text">Yükleniyor...</p>
     </div>
 
-    <!-- 2. TARAFLAR -->
+    <!-- 2. TARAFLAR — Manuel -->
     <div class="section" id="taraflar">
       <div class="section-header">
         <span class="section-num">02</span>
@@ -167,65 +162,48 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 3. ÇIKIŞ SEBEPLERİ -->
+    <!-- 3. SEBEPLER — Manuel -->
     <div class="section" id="sebepler">
       <div class="section-header">
         <span class="section-num">03</span>
         <span class="section-title">Çıkış Sebepleri ve İlgili Veriler</span>
       </div>
-      <p class="placeholder">[Savaşın kısa ve uzun vadeli sebeplerini yaz. NATO genişlemesi, Donbas, Kırım meselesi, tarihsel arka plan vb. İlgili haberler veya raporlara bağlantı eklenebilir.]</p>
+      <p class="placeholder">[Savaşın kısa ve uzun vadeli sebeplerini yaz. NATO genişlemesi, Donbas, Kırım meselesi, tarihsel arka plan vb.]</p>
     </div>
 
-    <!-- 4. İCRAATLER -->
+    <!-- 4. İCRAATLER — Manuel -->
     <div class="section" id="icraatler">
       <div class="section-header">
         <span class="section-num">04</span>
         <span class="section-title">Tarafların İcraatleri ve Fiiliyatları</span>
       </div>
-      <p class="placeholder">[Her iki tarafın sahada ve diplomatik alanda ne yaptığını yaz. Askeri hamleler, yaptırımlar, müzakere girişimleri, propaganda vb.]</p>
+      <p class="placeholder">[Her iki tarafın sahada ve diplomatik alanda ne yaptığını yaz.]</p>
     </div>
 
-    <!-- 5. SON DURUM -->
+    <!-- 5. SON DURUM — AI -->
     <div class="section" id="son-durum">
       <div class="section-header">
         <span class="section-num">05</span>
         <span class="section-title">Son Durum</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <p class="placeholder">[Güncel cephe hattı, son haftalarda yaşanan gelişmeler, kayıplar, toprak durumu vb.]</p>
+      <p class="ai-text loading" id="son-durum-text">Yükleniyor...</p>
     </div>
 
-    <!-- 6. KRONOLOJİ -->
+    <!-- 6. KRONOLOJİ — AI -->
     <div class="section" id="kronoloji">
       <div class="section-header">
         <span class="section-num">06</span>
         <span class="section-title">Zincirleme Bağlantılı Haberler</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <div class="kronoloji">
-        <div class="kronoloji-item">
-          <span class="kronoloji-tarih">Şubat 2022</span>
-          <span class="kronoloji-icerik">[Olay başlangıcı — tam ölçekli işgalin başlaması]</span>
-        </div>
-        <div class="kronoloji-item">
-          <span class="kronoloji-tarih">Mart 2022</span>
-          <span class="kronoloji-icerik">[Kronolojik gelişme]</span>
-        </div>
-        <div class="kronoloji-item">
-          <span class="kronoloji-tarih">[Tarih]</span>
-          <span class="kronoloji-icerik">[Gelişme]</span>
-        </div>
-        <div class="kronoloji-item">
-          <span class="kronoloji-tarih">[Tarih]</span>
-          <span class="kronoloji-icerik">[Gelişme]</span>
-        </div>
-        <div class="kronoloji-item">
-          <span class="kronoloji-tarih">[Tarih]</span>
-          <span class="kronoloji-icerik">[Gelişme]</span>
-        </div>
+      <div class="kronoloji" id="kronoloji-list">
+        <div class="kronoloji-item"><span class="kronoloji-tarih">—</span><span class="kronoloji-icerik loading">Yükleniyor...</span></div>
       </div>
     </div>
 
-    <!-- 7. DESTEKÇİLER -->
-    <div class="section" id="destekçiler">
+    <!-- 7. DESTEKÇİLER — Manuel -->
+    <div class="section" id="destekcilder">
       <div class="section-header">
         <span class="section-num">07</span>
         <span class="section-title">Destekçiler</span>
@@ -236,14 +214,14 @@ header span { font-size: 12px; color: #666; }
             <span class="destekci-ulke">ABD</span>
             <span class="destekci-tip">Ukrayna Tarafı · Askeri + Mali</span>
           </div>
-          <p>[ABD'nin Ukrayna'ya sağladığı desteğin detayları, miktarlar, ilgili haberler.]</p>
+          <p>[ABD'nin Ukrayna'ya sağladığı desteğin detayları.]</p>
         </div>
         <div class="destekci">
           <div class="destekci-header">
             <span class="destekci-ulke">İran</span>
             <span class="destekci-tip">Rusya Tarafı · Silah</span>
           </div>
-          <p>[İran'ın Rusya'ya sağladığı desteğin detayları, Shahed insansız hava araçları vb.]</p>
+          <p>[İran'ın Rusya'ya sağladığı desteğin detayları.]</p>
         </div>
         <div class="destekci">
           <div class="destekci-header">
@@ -255,54 +233,31 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 8. ETKİLENENLER -->
+    <!-- 8. ETKİLENENLER — AI -->
     <div class="section" id="etkilenenler">
       <div class="section-header">
         <span class="section-num">08</span>
         <span class="section-title">Etkilenenler</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <div class="etkilenen-list">
-        <div class="etkilenen">
-          <h4>Avrupa Enerji Piyasaları</h4>
-          <p>[Rusya gazının kesilmesinin Avrupa enerji piyasalarına etkisi, fiyat artışları, alternatif arayışlar.]</p>
-        </div>
-        <div class="etkilenen">
-          <h4>Küresel Tahıl Piyasaları</h4>
-          <p>[Ukrayna ve Rusya'nın buğday ihracatındaki rolü, tahıl koridoru anlaşması, gelişmekte olan ülkelere etkileri.]</p>
-        </div>
-        <div class="etkilenen">
-          <h4>[Etkilenen Taraf]</h4>
-          <p>[Etki detayları.]</p>
-        </div>
+      <div class="etkilenen-list" id="etkilenenler-list">
+        <div class="etkilenen"><h4>—</h4><p class="loading">Yükleniyor...</p></div>
       </div>
     </div>
 
-    <!-- 9. SENARYOLAR -->
+    <!-- 9. SENARYOLAR — AI -->
     <div class="section" id="senaryolar">
       <div class="section-header">
         <span class="section-num">09</span>
         <span class="section-title">Gelecek Senaryoları</span>
+        <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <div class="senaryo-list">
-        <div class="senaryo">
-          <div class="senaryo-label yuksek">Yüksek Olasılık</div>
-          <p>[Senaryo açıklaması — örn. uzun süreli yıpratma savaşı, cephe hattı büyük ölçüde sabit kalır.]</p>
-          <div class="senaryo-veri">Dayandığı veriler: [Hangi göstergeler bu senaryoyu destekliyor?]</div>
-        </div>
-        <div class="senaryo">
-          <div class="senaryo-label orta">Orta Olasılık</div>
-          <p>[Senaryo açıklaması — örn. müzakere yoluyla donmuş çatışma, Kore modeli.]</p>
-          <div class="senaryo-veri">Dayandığı veriler: [Hangi göstergeler bu senaryoyu destekliyor?]</div>
-        </div>
-        <div class="senaryo">
-          <div class="senaryo-label dusuk">Düşük Olasılık</div>
-          <p>[Senaryo açıklaması — örn. Rusya'nın tam çekilmesi veya rejim değişikliği.]</p>
-          <div class="senaryo-veri">Dayandığı veriler: [Hangi göstergeler bu senaryoyu destekliyor?]</div>
-        </div>
+      <div class="senaryo-list" id="senaryolar-list">
+        <div class="senaryo"><p class="loading">Yükleniyor...</p></div>
       </div>
     </div>
 
-    <!-- 10. AÇIK SORULAR -->
+    <!-- 10. AÇIK SORULAR — Manuel -->
     <div class="section" id="sorular">
       <div class="section-header">
         <span class="section-num">10</span>
@@ -312,33 +267,115 @@ header span { font-size: 12px; color: #666; }
         <li>[Takip edilmesi gereken soru veya gelişme]</li>
         <li>[Takip edilmesi gereken soru veya gelişme]</li>
         <li>[Takip edilmesi gereken soru veya gelişme]</li>
-        <li>[Takip edilmesi gereken soru veya gelişme]</li>
       </ul>
     </div>
 
-    <div class="footer-meta">
-      Bu dosya manuel olarak güncellenmektedir. İçerik analist değerlendirmesine dayanır.
+    <div class="footer-meta" id="footer-meta">
+      Manuel bölümler analist tarafından doldurulur. AI bölümleri günlük olarak güncellenir.
     </div>
 
   </main>
 </div>
 
 <script>
-  // Aktif bölümü sidebar'da vurgula
-  const sections = document.querySelectorAll(".section");
-  const navLinks = document.querySelectorAll(".sidebar nav a");
+const WORKER = "https://r.rasad-news-proxy.workers.dev";
+const CACHE_KEY = "ru-content";
+const CACHE_DATE_KEY = "ru-content-date";
+const today = new Date().toDateString();
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        navLinks.forEach(link => link.classList.remove("active"));
-        const active = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
-        if (active) active.classList.add("active");
-      }
+function olasılikClass(o) {
+  if (!o) return "orta";
+  const v = o.toLowerCase();
+  if (v.includes("yüksek") || v.includes("yuksek")) return "yuksek";
+  if (v.includes("düşük") || v.includes("dusuk")) return "dusuk";
+  return "orta";
+}
+
+function renderContent(data) {
+  // Özet
+  if (data.ozet) {
+    const el = document.getElementById("ozet-text");
+    el.textContent = data.ozet;
+    el.classList.remove("loading");
+  }
+
+  // Son Durum
+  if (data.son_durum) {
+    const el = document.getElementById("son-durum-text");
+    el.textContent = data.son_durum;
+    el.classList.remove("loading");
+  }
+
+  // Kronoloji
+  if (data.kronoloji?.length) {
+    document.getElementById("kronoloji-list").innerHTML = data.kronoloji.map(k => `
+      <div class="kronoloji-item">
+        <span class="kronoloji-tarih">${k.tarih || "—"}</span>
+        <span class="kronoloji-icerik">${k.olay || ""}</span>
+      </div>`).join("");
+  }
+
+  // Etkilenenler
+  if (data.etkilenenler?.length) {
+    document.getElementById("etkilenenler-list").innerHTML = data.etkilenenler.map(e => `
+      <div class="etkilenen">
+        <h4>${e.baslik || "—"}</h4>
+        <p>${e.aciklama || ""}</p>
+      </div>`).join("");
+  }
+
+  // Senaryolar
+  if (data.senaryolar?.length) {
+    document.getElementById("senaryolar-list").innerHTML = data.senaryolar.map(s => `
+      <div class="senaryo">
+        <div class="senaryo-label ${olasılikClass(s.olasilik)}">${s.olasilik || "—"}</div>
+        <p>${s.aciklama || ""}</p>
+        ${s.veri ? `<div class="senaryo-veri">Dayandığı veriler: ${s.veri}</div>` : ""}
+      </div>`).join("");
+  }
+
+  // Güncelleme tarihi
+  document.getElementById("guncelleme-tarihi").textContent =
+    `Son güncelleme: ${new Date().toLocaleDateString("tr-TR")}${data.cached ? " (cache)" : ""}`;
+}
+
+// LocalStorage cache kontrolü
+const cachedContent = localStorage.getItem(CACHE_KEY);
+const cachedDate = localStorage.getItem(CACHE_DATE_KEY);
+
+if (cachedContent && cachedDate === today) {
+  renderContent(JSON.parse(cachedContent));
+} else {
+  fetch(`${WORKER}/rusya-ukrayna-content`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      renderContent(data);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(CACHE_DATE_KEY, today);
+    })
+    .catch(err => {
+      ["ozet-text", "son-durum-text"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = "İçerik yüklenemedi."; el.classList.remove("loading"); }
+      });
+      console.error("İçerik yükleme hatası:", err);
     });
-  }, { threshold: 0.3 });
+}
 
-  sections.forEach(s => observer.observe(s));
+// Aktif sidebar bölümü vurgula
+const sections = document.querySelectorAll(".section");
+const navLinks = document.querySelectorAll(".sidebar nav a");
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove("active"));
+      const active = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+      if (active) active.classList.add("active");
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
 </script>
 
 </body>
