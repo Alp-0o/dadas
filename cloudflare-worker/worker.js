@@ -1,9 +1,13 @@
 // Graf verisi — data/dossiers/rusya-ukrayna/ kaynaklı, render sırasında doğrudan okunur
 const RU_ENTITIES = [
-  { id: "country:russia",   canonical_name: "Rusya Federasyonu",              type: "country" },
-  { id: "country:ukraine",  canonical_name: "Ukrayna",                         type: "country" },
-  { id: "country:usa",      canonical_name: "Amerika Birleşik Devletleri",     type: "country" },
-  { id: "org:nato",         canonical_name: "NATO",                            type: "organization" },
+  { id: "country:russia",  canonical_name: "Rusya Federasyonu",          type: "country",
+    aliases: ["Rusya", "Russia", "Россия", "RF"], sector_tags: ["jeopolitik", "enerji", "askeri"] },
+  { id: "country:ukraine", canonical_name: "Ukrayna",                     type: "country",
+    aliases: ["Ukraine", "Україна", "UA"],         sector_tags: ["jeopolitik", "askeri"] },
+  { id: "country:usa",     canonical_name: "Amerika Birleşik Devletleri", type: "country",
+    aliases: ["ABD", "USA", "Amerika"],            sector_tags: ["jeopolitik", "askeri", "ekonomi"] },
+  { id: "org:nato",        canonical_name: "NATO",                        type: "organization",
+    aliases: ["Kuzey Atlantik Antlaşması Örgütü"], sector_tags: ["jeopolitik", "askeri"] },
   { id: "event:tam-saldiri-2022-02-24", canonical_name: "Tam Ölçekli Saldırı (24 Şubat 2022)", type: "event" },
   { id: "resource:dogalgaz-rus", canonical_name: "Rus Doğal Gazı",            type: "resource" },
   { id: "place:donbas",     canonical_name: "Donbas",                          type: "place" },
@@ -253,7 +257,7 @@ Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçb
   return jsonResponse({ ...content, cached: false });
 }
 
-// --- YENİ: GRAFIK TABANLI TARAFLAR ---
+// --- YENİ: GRAFIK TABANLI TARAFLAR + DESTEKÇİLER ---
 
 function handleRusyaUkraynaTaraflar() {
   const entityMap = Object.fromEntries(RU_ENTITIES.map(e => [e.id, e]));
@@ -266,45 +270,48 @@ function handleRusyaUkraynaTaraflar() {
     return m;
   }
 
-  // Ukrayna tarafı: type=supports, target=ukraine, polarity=support
-  const ukrayna_taraf = RU_EDGES
-    .filter(e => e.type === "supports" && e.target_id === "country:ukraine" && e.polarity === "support")
-    .map(e => {
-      const entity = entityMap[e.source_id];
-      return {
-        ulke: entity?.canonical_name || e.source_id,
-        destek: e.attributes?.support_type || e.type,
-        detay: e.attributes?.note || "",
-        modality: e.modality,
-        modality_label: modalityLabel(e.modality),
-        valid_from: e.valid_from,
-        edge_id: e.id,
-      };
-    });
+  function entityCard(id) {
+    const e = entityMap[id];
+    if (!e) return null;
+    return {
+      id: e.id,
+      canonical_name: e.canonical_name,
+      aliases: (e.aliases || []).filter(a => a !== e.canonical_name).slice(0, 4),
+      sector_tags: e.sector_tags || [],
+      type: e.type,
+    };
+  }
 
-  // Rusya tarafı: type=commanded, source=russia → Rusya'nın kendisi saldırganı temsil eder
-  // Grafik henüz Rusya destekçisi (İran, K.Kore, Beyaz Rusya) edge'leri içermiyor
-  const rusya_taraf = RU_EDGES
-    .filter(e => e.type === "commanded" && e.source_id === "country:russia")
-    .map(e => {
-      const entity = entityMap[e.source_id];
-      return {
-        ulke: entity?.canonical_name || "Rusya",
-        destek: "Saldırgan Taraf",
-        detay: "Rusya, Şubat 2022'de tam ölçekli saldırıyı başlatan taraftır.",
-        modality: e.modality,
-        modality_label: modalityLabel(e.modality),
-        valid_from: e.valid_from,
-        edge_id: e.id,
-      };
-    });
+  // Destekçi kenarları: type=supports
+  function destekcilar(target_id) {
+    return RU_EDGES
+      .filter(e => e.type === "supports" && e.target_id === target_id && e.polarity === "support")
+      .map(e => {
+        const entity = entityMap[e.source_id];
+        return {
+          ulke: entity?.canonical_name || e.source_id,
+          destek: e.attributes?.support_type || e.type,
+          detay: e.attributes?.note || "",
+          modality: e.modality,
+          modality_label: modalityLabel(e.modality),
+          valid_from: e.valid_from,
+          edge_id: e.id,
+        };
+      });
+  }
 
   return jsonResponse({
-    rusya_taraf,
-    ukrayna_taraf,
+    rusya: {
+      entity: entityCard("country:russia"),
+      destekcilar: destekcilar("country:russia"),
+      graf_notu: "Rusya destekçisi düğümler (İran, K.Kore, Beyaz Rusya) henüz eklenmedi.",
+    },
+    ukrayna: {
+      entity: entityCard("country:ukraine"),
+      destekcilar: destekcilar("country:ukraine"),
+    },
     source: "graph",
     schema_version: "1.0",
-    graf_notu: "Rusya destekçisi düğümler (İran, K.Kore, Beyaz Rusya) henüz graf verisine eklenmedi.",
   });
 }
 

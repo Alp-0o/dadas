@@ -57,6 +57,15 @@ header span { font-size: 12px; color: #666; }
 .modality-badge.inferred  { color: #e0a030; background: #1a1000; border: 1px dashed #e0a030; }
 .modality-badge.claimed   { color: #e07070; background: #1a0000; }
 .graf-notu { font-size: 11px; color: #444; font-style: italic; margin-top: 12px; border-left: 2px solid #1e1e2e; padding-left: 10px; }
+.taraf-main-card { background: #0d0d1e; border-radius: 8px; padding: 16px; margin-bottom: 4px; }
+.rusya-main  { border: 1px solid #3a1a1a; }
+.ukrayna-main { border: 1px solid #1a2a3a; }
+.taraf-main-card .taraf-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.rusya-main  .taraf-name { color: #e07070; }
+.ukrayna-main .taraf-name { color: #70a8e0; }
+.taraf-main-card .taraf-aliases { font-size: 11px; color: #444; margin-bottom: 10px; }
+.sector-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.sector-tag { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; background: #111122; border: 1px solid #2a2a3a; border-radius: 3px; padding: 2px 6px; color: #666; }
 
 .placeholder { font-size: 14px; line-height: 1.9; color: #444; font-style: italic; border-left: 2px solid #1e1e2e; padding-left: 16px; }
 .ai-text { font-size: 14px; line-height: 1.9; color: #ccc; }
@@ -127,7 +136,7 @@ header span { font-size: 12px; color: #666; }
     <div class="sidebar-title">İçindekiler</div>
     <nav>
       <a href="#ozet"><span class="num">01</span>Olayın Özeti<span class="ai-tag">AI</span></a>
-      <a href="#taraflar"><span class="num">02</span>Taraflar</a>
+      <a href="#destekcilder"><span class="num">02</span>Taraflar &amp; Destekçiler</a>
       <a href="#sebepler"><span class="num">03</span>Çıkış Sebepleri</a>
       <a href="#icraatler"><span class="num">04</span>İcraatler</a>
       <a href="#son-durum"><span class="num">05</span>Son Durum<span class="ai-tag">AI</span></a>
@@ -149,24 +158,6 @@ header span { font-size: 12px; color: #666; }
         <span class="section-ai-badge">AI · Günlük</span>
       </div>
       <p class="ai-text loading" id="ozet-text">Yükleniyor...</p>
-    </div>
-
-    <!-- 2. TARAFLAR — Manuel -->
-    <div class="section" id="taraflar">
-      <div class="section-header">
-        <span class="section-num">02</span>
-        <span class="section-title">Taraflar</span>
-      </div>
-      <div class="taraflar-grid">
-        <div class="taraf-card rusya">
-          <h4>Rusya Federasyonu</h4>
-          <p>[Rusya'nın bu çatışmadaki rolü, liderliği, temel motivasyonları hakkında kısa tanım.]</p>
-        </div>
-        <div class="taraf-card ukrayna">
-          <h4>Ukrayna</h4>
-          <p>[Ukrayna'nın bu çatışmadaki rolü, liderliği, temel motivasyonları hakkında kısa tanım.]</p>
-        </div>
-      </div>
     </div>
 
     <!-- 3. SEBEPLER — Manuel -->
@@ -209,25 +200,23 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 7. DESTEKÇİLER — GRAFİK -->
+    <!-- 7. TARAFLAR & DESTEKÇİLER — GRAFİK -->
     <div class="section" id="destekcilder">
       <div class="section-header">
         <span class="section-num">07</span>
-        <span class="section-title">Destekçiler</span>
+        <span class="section-title">Taraflar &amp; Destekçiler</span>
         <span class="section-graph-badge">Grafik · Statik</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
           <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e07070;margin-bottom:10px">Rusya Tarafı</div>
-          <div class="destekci-list" id="rusya-taraf-list">
-            <div class="destekci"><p class="loading">Yükleniyor...</p></div>
-          </div>
+          <div id="rusya-entity-card"><div class="taraf-main-card rusya-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
+          <div class="destekci-list" id="rusya-taraf-list" style="margin-top:10px"></div>
         </div>
         <div>
           <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#70a8e0;margin-bottom:10px">Ukrayna Tarafı</div>
-          <div class="destekci-list" id="ukrayna-taraf-list">
-            <div class="destekci"><p class="loading">Yükleniyor...</p></div>
-          </div>
+          <div id="ukrayna-entity-card"><div class="taraf-main-card ukrayna-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
+          <div class="destekci-list" id="ukrayna-taraf-list" style="margin-top:10px"></div>
         </div>
       </div>
       <div class="graf-notu" id="destekci-graf-notu"></div>
@@ -353,17 +342,36 @@ function renderDestekciCard(d) {
     </div>`;
 }
 
+function renderEntityCard(taraf, containerId) {
+  const e = taraf?.entity;
+  if (!e) return;
+  const tarafClass = containerId.includes("rusya") ? "rusya-main" : "ukrayna-main";
+  const aliasText = (e.aliases || []).slice(0, 3).join(" · ");
+  const tagPills = (e.sector_tags || [])
+    .map(t => `<span class="sector-tag">${t}</span>`).join("");
+  document.getElementById(containerId).innerHTML = `
+    <div class="taraf-main-card ${tarafClass}">
+      <div class="taraf-name">${e.canonical_name}</div>
+      ${aliasText ? `<div class="taraf-aliases">${aliasText}</div>` : ""}
+      <div class="sector-tags">${tagPills}</div>
+    </div>`;
+}
+
 function renderTaraflar(data) {
-  if (data.rusya_taraf?.length) {
+  renderEntityCard(data.rusya,  "rusya-entity-card");
+  renderEntityCard(data.ukrayna, "ukrayna-entity-card");
+
+  if (data.rusya?.destekcilar?.length) {
     document.getElementById("rusya-taraf-list").innerHTML =
-      data.rusya_taraf.map(renderDestekciCard).join("");
+      data.rusya.destekcilar.map(renderDestekciCard).join("");
+  } else if (data.rusya?.graf_notu) {
+    document.getElementById("rusya-taraf-list").innerHTML =
+      `<p class="graf-notu" style="margin-top:0">${data.rusya.graf_notu}</p>`;
   }
-  if (data.ukrayna_taraf?.length) {
+
+  if (data.ukrayna?.destekcilar?.length) {
     document.getElementById("ukrayna-taraf-list").innerHTML =
-      data.ukrayna_taraf.map(renderDestekciCard).join("");
-  }
-  if (data.graf_notu) {
-    document.getElementById("destekci-graf-notu").textContent = data.graf_notu;
+      data.ukrayna.destekcilar.map(renderDestekciCard).join("");
   }
 }
 
