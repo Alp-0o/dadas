@@ -1,6 +1,7 @@
 # RASAD — Proje Bağlam Belgesi v2
 *Yeni Claude Code oturumlarının başında bu dosyayı yapıştır.*
 *Önceki versiyon: rasad_context.md (temel proje tanımı için hâlâ geçerli)*
+*Çekirdek mimari belgesi: rasad_cekirdek_mimari_v1.md.docx (yerel ~/Downloads — GitHub'a commit edilmedi, gizli belge)*
 
 ---
 
@@ -10,7 +11,7 @@ Rasad, jeopolitika/ekonomi/finans olayları arasındaki gizli bağlantıları AI
 
 **Canlı site:** `alp-0o.github.io/dadas`
 **Repo:** `github.com/Alp-0o/dadas` (public)
-**Çalışma dizini:** `C:\Users\Monster Jo\rasad`
+**Çalışma dizini:** `/Users/fikretozdemir/rasad` (Mac'e geçildi — önceki Windows: `C:\Users\Monster Jo\rasad`)
 
 ---
 
@@ -73,6 +74,15 @@ rasad/
 - Kaynak etiketleme sistemi yazıldı (ukrayna kaynağı / batı medyası / rusya devlet medyası / diğer)
 - **Henüz Worker'a taşınmadı** — Worker hâlâ GNews kullanıyor
 
+### Aşama 4 — Grafik-Merkezli Mimariye Geçiş ✓ (başladı)
+- `data/dossiers/rusya-ukrayna/entities.json` — 7 düğüm (çekirdek mimari v1 §2.1 şemasında)
+- `data/dossiers/rusya-ukrayna/edges.json` — 6 kenar, 1 `inferred` (§2.2 şemasında)
+- `data/dossiers/rusya-ukrayna/sources.json` — 3 kaynak düğümü (§2.7 şemasında)
+- **Pivot anı gerçekleşti:** Taraflar + Destekçiler bölümleri artık Groq'tan değil, `/rusya-ukrayna-taraflar` endpoint'i üzerinden graftan render ediliyor
+- Section 02 (Taraflar, manuel) kaldırıldı; section 07 (Destekçiler) ikisini birleştirdi
+- Entity kartları: canonical_name, aliases (Россия/Україна vb.), sector_tag pilleri
+- Modality badge'leri: verified (yeşil) / reported (mavi) / inferred (turuncu kesik)
+
 ---
 
 ## 4. Rusya-Ukrayna Dosyası Yapısı
@@ -131,10 +141,12 @@ başlık: EU leaders squabble over outreach to Moscow
 
 | Sorun | Durum | Çözüm |
 |---|---|---|
-| metals.dev 530 hatası | Aktif | metals.dev geçici çökmüş. Hafta içinde Alpha Vantage'a geçmeyi planla |
-| KV cache bağlantısı | Belirsiz | Worker'da null-check bypass var, localStorage yeterli şimdilik |
-| AI fabrication (sahte kaynak/tarih) | Son deploy'da düzeltildi, test edilmedi | Deploy sonrası localStorage'ı temizleyip test et |
+| metals.dev 530 hatası | Aktif | metals.dev geçici çökmüş. Alpha Vantage'a geçmeyi planla (bkz. P4) |
+| KV cache bağlantısı | **Çözüldü** | wrangler.toml + doğru KV ID ile test edildi, `cached: true` doğrulandı |
+| AI fabrication (sahte kaynak/tarih) | Düzeltildi, kısmen test edildi | localStorage temizleyip kronoloji bölümünü kontrol et |
 | GDELT Worker'a taşınmadı | Planlandı | Bkz. Sıradaki Öncelikler |
+| Worker adı karışıklığı | **Çözüldü** | Gerçek worker adı `r` (`r.rasad-news-proxy.workers.dev`). `wrangler.toml` buna göre ayarlandı. Deploy her zaman `--config cloudflare-worker/wrangler.toml` ile yapılmalı |
+| Git kimlik doğrulama (Mac) | **Çözüldü** | GitHub Personal Access Token ile HTTPS push çalışıyor |
 
 ### localStorage Temizleme (test için console'a gir)
 ```javascript
@@ -147,11 +159,18 @@ location.reload();
 
 ## 7. Sıradaki Öncelikler (Sıralı)
 
+### P0 — Adım 3: LLM'ye "kenar üret" dedirtmek ← YARIN
+Mimari belge §10, Adım 3. Tek hedef:
+- Worker'a (veya lokal test scripti olarak) yeni bir prompt yaz
+- LLM'nin görevi: "10 bölüm doldur" değil, bir haber metninden `edges.json` şemasında (`type`, `source_id`, `target_id`, `modality`, `provenance[]`) kenar nesneleri üretmek
+- İlişki tipini §2.6 sözlüğünden seçmeli, serbest metin üretmemeli
+- Tek bir makale üzerinde test et, çıktıyı elle doğrula
+- Başlangıç prompt'u için: `rasad_cekirdek_mimari_v1.md.docx` §5 (Katman 2 kontratı) ve §10 Adım 3
+
 ### P1 — Fabrication fix'ini doğrula
-Son deploy'da kaynak/tarih uydurma sorunu giderildi ama test edilmedi.
-1. Worker'ı Cloudflare'e deploy et (son commit: `952b61d`)
-2. localStorage temizle
-3. Sayfayı aç → kronoloji bölümünde gerçek domainler ve 2026 tarihleri görünmeli
+Zaten deploy edildi. Hâlâ test edilmedi.
+1. localStorage temizle: `localStorage.removeItem("ru-content"); localStorage.removeItem("ru-content-date"); location.reload();`
+2. Kronoloji bölümünde gerçek domainler ve 2026 tarihleri görünmeli
 
 ### P2 — GDELT'i Worker'a taşı
 Lokal test scripti (`scripts/test-gdelt.js`) hazır ve çalışıyor.
@@ -198,7 +217,18 @@ Not: `seendate` formatı `20260620T113000Z` — `publishedAt` değil!
 
 ---
 
-## 9. Oturum Kuralı
+## 9. Mac Kurulum Notları
+
+```bash
+# Node.js: nvm ile v26.3.1
+# Wrangler: kurulu, giriş yapıldı (alpomerozdemir@gmail.com)
+# Git push: HTTPS + Personal Access Token (GitHub CLI kurulu değil, Homebrew yok)
+# Deploy komutu (her zaman bu dizinden):
+cd cloudflare-worker && wrangler deploy --config wrangler.toml
+# Kök dizinden çalıştırma — wrangler.jsonc'yi bulur, yanlış worker'a deploy eder
+```
+
+## 10. Oturum Kuralı
 
 Her oturumun başında:
 1. Bu dosyayı yapıştır
