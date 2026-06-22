@@ -1,0 +1,165 @@
+[
+  {
+    "id": "edge:00001",
+    "schema_version": "1.0",
+    "source_id": "country:russia",
+    "target_id": "event:tam-saldiri-2022-02-24",
+    "type": "commanded",
+    "directed": true,
+    "polarity": "neutral",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "verified",
+    "provenance": [
+      {
+        "source_id": "src:ap-2022-02-24-invasion",
+        "domain": "apnews.com",
+        "published": "2022-02-24",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:tass-2022-02-24-svo",
+        "domain": "tass.ru",
+        "published": "2022-02-24",
+        "source_type": "rusya devlet medyası",
+        "language": "ru"
+      }
+    ],
+    "attributes": {},
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00002",
+    "schema_version": "1.0",
+    "source_id": "event:tam-saldiri-2022-02-24",
+    "target_id": "place:donbas",
+    "type": "located_in",
+    "directed": true,
+    "polarity": "neutral",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:ap-2022-02-24-invasion",
+        "domain": "apnews.com",
+        "published": "2022-02-24",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "note": "çatışmanın ağırlık merkezi; saldırı çok cepheli başladı ama Donbas kalıcı arena"
+    },
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00003",
+    "schema_version": "1.0",
+    "source_id": "country:usa",
+    "target_id": "country:ukraine",
+    "type": "supports",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "verified",
+    "provenance": [
+      {
+        "source_id": "src:reuters-2022-04-13-aid",
+        "domain": "reuters.com",
+        "published": "2022-04-13",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:ap-2022-02-24-invasion",
+        "domain": "apnews.com",
+        "published": "2022-02-24",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "support_type": "askeri + ekonomik yardım",
+      "cumulative_usd_bn": 175
+    },
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00004",
+    "schema_version": "1.0",
+    "source_id": "org:nato",
+    "target_id": "country:ukraine",
+    "type": "supports",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:ap-2022-02-24-invasion",
+        "domain": "apnews.com",
+        "published": "2022-02-24",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "support_type": "istihbarat paylaşımı, eğitim, koordinasyon",
+      "note": "NATO doğrudan savaşa girmedi; destek dolaylı"
+    },
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00005",
+    "schema_version": "1.0",
+    "source_id": "country:russia",
+    "target_id": "resource:dogalgaz-rus",
+    "type": "controls",
+    "directed": true,
+    "polarity": "neutral",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:reuters-2022-04-13-aid",
+        "domain": "reuters.com",
+        "published": "2022-04-13",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "mechanism": "Gazprom devlet tekeli üzerinden ihracat kontrolü"
+    },
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00006",
+    "schema_version": "1.0",
+    "source_id": "resource:dogalgaz-rus",
+    "target_id": "org:nato",
+    "type": "affects",
+    "directed": true,
+    "polarity": "oppose",
+    "valid_from": "2022-06-01",
+    "valid_to": null,
+    "modality": "inferred",
+    "provenance": [],
+    "attributes": {
+      "rasad_reasoning": "Rusya, savaş boyunca gaz akışını kısıtladı (Nord Stream kesintisi, Polonya/Bulgaristan kesilmesi). Bu, NATO üyelerini enerji baskısıyla karşı karşıya bıraktı ve ittifak içi birliği test etti. Hiçbir kaynak bu nedenselliği doğrudan kurmadı — bu Rasad'ın çıkarımıdır.",
+      "inferred_from_edges": ["edge:00001", "edge:00005"]
+    },
+    "created_at": "2026-06-22T10:00:00Z",
+    "updated_at": "2026-06-22T10:00:00Z"
+  }
+]

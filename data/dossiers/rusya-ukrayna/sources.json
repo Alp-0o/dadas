@@ -1,0 +1,44 @@
+[
+  {
+    "id": "src:ap-2022-02-24-invasion",
+    "schema_version": "1.0",
+    "type": "source",
+    "canonical_name": "AP — Russia launches full-scale invasion of Ukraine",
+    "attributes": {
+      "domain": "apnews.com",
+      "url": "https://apnews.com/article/russia-ukraine-2022-02-24",
+      "published": "2022-02-24",
+      "source_type": "batı medyası",
+      "language": "en",
+      "country": "US"
+    }
+  },
+  {
+    "id": "src:reuters-2022-04-13-aid",
+    "schema_version": "1.0",
+    "type": "source",
+    "canonical_name": "Reuters — U.S. announces new military aid package for Ukraine",
+    "attributes": {
+      "domain": "reuters.com",
+      "url": "https://reuters.com/world/europe/us-ukraine-aid-2022-04-13",
+      "published": "2022-04-13",
+      "source_type": "batı medyası",
+      "language": "en",
+      "country": "GB"
+    }
+  },
+  {
+    "id": "src:tass-2022-02-24-svo",
+    "schema_version": "1.0",
+    "type": "source",
+    "canonical_name": "TASS — Путин объявил о начале специальной военной операции",
+    "attributes": {
+      "domain": "tass.ru",
+      "url": "https://tass.ru/politika/13840003",
+      "published": "2022-02-24",
+      "source_type": "rusya devlet medyası",
+      "language": "ru",
+      "country": "RU"
+    }
+  }
+]

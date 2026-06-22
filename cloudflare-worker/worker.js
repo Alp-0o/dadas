@@ -1,3 +1,50 @@
+// Graf verisi — data/dossiers/rusya-ukrayna/ kaynaklı, render sırasında doğrudan okunur
+const RU_ENTITIES = [
+  { id: "country:russia",   canonical_name: "Rusya Federasyonu",              type: "country" },
+  { id: "country:ukraine",  canonical_name: "Ukrayna",                         type: "country" },
+  { id: "country:usa",      canonical_name: "Amerika Birleşik Devletleri",     type: "country" },
+  { id: "org:nato",         canonical_name: "NATO",                            type: "organization" },
+  { id: "event:tam-saldiri-2022-02-24", canonical_name: "Tam Ölçekli Saldırı (24 Şubat 2022)", type: "event" },
+  { id: "resource:dogalgaz-rus", canonical_name: "Rus Doğal Gazı",            type: "resource" },
+  { id: "place:donbas",     canonical_name: "Donbas",                          type: "place" },
+];
+
+const RU_EDGES = [
+  {
+    id: "edge:00001", source_id: "country:russia", target_id: "event:tam-saldiri-2022-02-24",
+    type: "commanded", polarity: "neutral", modality: "verified", valid_from: "2022-02-24",
+    attributes: {},
+  },
+  {
+    id: "edge:00002", source_id: "event:tam-saldiri-2022-02-24", target_id: "place:donbas",
+    type: "located_in", polarity: "neutral", modality: "reported", valid_from: "2022-02-24",
+    attributes: { note: "Çatışmanın ağırlık merkezi" },
+  },
+  {
+    id: "edge:00003", source_id: "country:usa", target_id: "country:ukraine",
+    type: "supports", polarity: "support", modality: "verified", valid_from: "2022-02-24",
+    attributes: { support_type: "Askeri + Ekonomik Yardım", note: "Kümülatif ~175 milyar dolar. ABD Kongresi onaylı paketler." },
+  },
+  {
+    id: "edge:00004", source_id: "org:nato", target_id: "country:ukraine",
+    type: "supports", polarity: "support", modality: "reported", valid_from: "2022-02-24",
+    attributes: { support_type: "İstihbarat + Eğitim + Koordinasyon", note: "NATO doğrudan savaşa girmedi; destek dolaylı." },
+  },
+  {
+    id: "edge:00005", source_id: "country:russia", target_id: "resource:dogalgaz-rus",
+    type: "controls", polarity: "neutral", modality: "reported", valid_from: "2022-02-24",
+    attributes: { mechanism: "Gazprom devlet tekeli" },
+  },
+  {
+    id: "edge:00006", source_id: "resource:dogalgaz-rus", target_id: "org:nato",
+    type: "affects", polarity: "oppose", modality: "inferred", valid_from: "2022-06-01",
+    attributes: {
+      rasad_reasoning: "Rusya gaz akışını kısıtladı (Nord Stream kesintisi, Polonya/Bulgaristan kesilmesi). NATO üyelerini enerji baskısıyla karşı karşıya bıraktı. Hiçbir kaynak bu nedenselliği doğrudan kurmadı — Rasad çıkarımıdır.",
+      inferred_from_edges: ["edge:00001", "edge:00005"],
+    },
+  },
+];
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "https://alp-0o.github.io",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -206,6 +253,61 @@ Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçb
   return jsonResponse({ ...content, cached: false });
 }
 
+// --- YENİ: GRAFIK TABANLI TARAFLAR ---
+
+function handleRusyaUkraynaTaraflar() {
+  const entityMap = Object.fromEntries(RU_ENTITIES.map(e => [e.id, e]));
+
+  function modalityLabel(m) {
+    if (m === "verified") return "doğrulanmış";
+    if (m === "reported") return "haberlenmiş";
+    if (m === "inferred") return "çıkarım";
+    if (m === "claimed") return "iddia";
+    return m;
+  }
+
+  // Ukrayna tarafı: type=supports, target=ukraine, polarity=support
+  const ukrayna_taraf = RU_EDGES
+    .filter(e => e.type === "supports" && e.target_id === "country:ukraine" && e.polarity === "support")
+    .map(e => {
+      const entity = entityMap[e.source_id];
+      return {
+        ulke: entity?.canonical_name || e.source_id,
+        destek: e.attributes?.support_type || e.type,
+        detay: e.attributes?.note || "",
+        modality: e.modality,
+        modality_label: modalityLabel(e.modality),
+        valid_from: e.valid_from,
+        edge_id: e.id,
+      };
+    });
+
+  // Rusya tarafı: type=commanded, source=russia → Rusya'nın kendisi saldırganı temsil eder
+  // Grafik henüz Rusya destekçisi (İran, K.Kore, Beyaz Rusya) edge'leri içermiyor
+  const rusya_taraf = RU_EDGES
+    .filter(e => e.type === "commanded" && e.source_id === "country:russia")
+    .map(e => {
+      const entity = entityMap[e.source_id];
+      return {
+        ulke: entity?.canonical_name || "Rusya",
+        destek: "Saldırgan Taraf",
+        detay: "Rusya, Şubat 2022'de tam ölçekli saldırıyı başlatan taraftır.",
+        modality: e.modality,
+        modality_label: modalityLabel(e.modality),
+        valid_from: e.valid_from,
+        edge_id: e.id,
+      };
+    });
+
+  return jsonResponse({
+    rusya_taraf,
+    ukrayna_taraf,
+    source: "graph",
+    schema_version: "1.0",
+    graf_notu: "Rusya destekçisi düğümler (İran, K.Kore, Beyaz Rusya) henüz graf verisine eklenmedi.",
+  });
+}
+
 // --- ROUTER ---
 
 export default {
@@ -222,6 +324,7 @@ export default {
       if (path === "/metals-comment") return await handleMetalsComment(env);
       if (path === "/news-comment") return await handleNewsComment(env);
       if (path === "/rusya-ukrayna-content") return await handleRusyaUkraynaContent(env);
+      if (path === "/rusya-ukrayna-taraflar") return handleRusyaUkraynaTaraflar();
       return jsonResponse({ error: "Geçersiz endpoint." }, 404);
     } catch (err) {
       return jsonResponse({ error: "Worker iç hatası", detail: err.message }, 500);

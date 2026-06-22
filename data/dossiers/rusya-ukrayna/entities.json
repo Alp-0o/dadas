@@ -1,0 +1,118 @@
+[
+  {
+    "id": "country:russia",
+    "schema_version": "1.0",
+    "type": "country",
+    "canonical_name": "Rusya Federasyonu",
+    "aliases": ["Rusya", "Russia", "RF", "Россия", "Российская Федерация"],
+    "sector_tags": ["jeopolitik", "enerji", "askeri"],
+    "attributes": {
+      "iso2": "RU",
+      "capital": "Moskova"
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:ap-2022-02-24-invasion"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "country:ukraine",
+    "schema_version": "1.0",
+    "type": "country",
+    "canonical_name": "Ukrayna",
+    "aliases": ["Ukraine", "UA", "Україна"],
+    "sector_tags": ["jeopolitik", "askeri"],
+    "attributes": {
+      "iso2": "UA",
+      "capital": "Kyiv"
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:ap-2022-02-24-invasion"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "country:usa",
+    "schema_version": "1.0",
+    "type": "country",
+    "canonical_name": "Amerika Birleşik Devletleri",
+    "aliases": ["ABD", "USA", "US", "United States", "Amerika"],
+    "sector_tags": ["jeopolitik", "askeri", "ekonomi"],
+    "attributes": {
+      "iso2": "US",
+      "capital": "Washington D.C."
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:reuters-2022-04-13-aid"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "org:nato",
+    "schema_version": "1.0",
+    "type": "organization",
+    "canonical_name": "NATO",
+    "aliases": ["Kuzey Atlantik Antlaşması Örgütü", "North Atlantic Treaty Organization", "НАТО"],
+    "sector_tags": ["jeopolitik", "askeri"],
+    "attributes": {
+      "hq": "Brüksel",
+      "founded": "1949-04-04",
+      "role": "kolektif savunma ittifakı"
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:ap-2022-02-24-invasion"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "event:tam-saldiri-2022-02-24",
+    "schema_version": "1.0",
+    "type": "event",
+    "canonical_name": "Rusya'nın Ukrayna'ya Tam Ölçekli Saldırısı",
+    "aliases": ["işgal", "invasion", "повномасштабне вторгнення", "специальная военная операция"],
+    "sector_tags": ["jeopolitik", "askeri"],
+    "attributes": {
+      "date": "2022-02-24",
+      "location_id": "place:donbas",
+      "event_class": "armed_conflict_onset"
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2022-02-24",
+    "source_refs": ["src:ap-2022-02-24-invasion"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "resource:dogalgaz-rus",
+    "schema_version": "1.0",
+    "type": "resource",
+    "canonical_name": "Rus Doğal Gazı",
+    "aliases": ["Russian natural gas", "Gazprom gazı", "Russian gas", "природный газ"],
+    "sector_tags": ["enerji", "ekonomi", "jeopolitik"],
+    "attributes": {
+      "commodity": "natural_gas",
+      "primary_exporter": "country:russia",
+      "key_routes": ["Nord Stream", "TürkAkım", "Ukrayna transit hattı"]
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:reuters-2022-04-13-aid"],
+    "confidence": "resolved"
+  },
+  {
+    "id": "place:donbas",
+    "schema_version": "1.0",
+    "type": "place",
+    "canonical_name": "Donbas",
+    "aliases": ["Donbass", "Donetsk-Luhansk bölgesi", "Донбас", "Донбасс"],
+    "sector_tags": ["jeopolitik", "askeri"],
+    "attributes": {
+      "country_id": "country:ukraine",
+      "coordinates": { "lat": 48.0, "lon": 38.0 },
+      "strategic_note": "çatışmanın fiziksel çapası, 2014'ten itibaren tartışmalı"
+    },
+    "first_seen": "2022-02-24",
+    "last_seen": "2026-06-22",
+    "source_refs": ["src:ap-2022-02-24-invasion"],
+    "confidence": "resolved"
+  }
+]

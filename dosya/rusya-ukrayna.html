@@ -50,6 +50,13 @@ header span { font-size: 12px; color: #666; }
 .section-num { font-size: 11px; color: #444; }
 .section-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #888; }
 .section-ai-badge { font-size: 9px; color: #6a5010; background: #1a1500; border: 1px solid #3a3000; border-radius: 3px; padding: 2px 6px; margin-left: auto; }
+.section-graph-badge { font-size: 9px; color: #105a6a; background: #001a1a; border: 1px solid #003a3a; border-radius: 3px; padding: 2px 6px; margin-left: auto; }
+.modality-badge { font-size: 9px; letter-spacing: 1px; border-radius: 3px; padding: 1px 5px; }
+.modality-badge.verified  { color: #70e070; background: #001a00; }
+.modality-badge.reported  { color: #70a8e0; background: #00101a; }
+.modality-badge.inferred  { color: #e0a030; background: #1a1000; border: 1px dashed #e0a030; }
+.modality-badge.claimed   { color: #e07070; background: #1a0000; }
+.graf-notu { font-size: 11px; color: #444; font-style: italic; margin-top: 12px; border-left: 2px solid #1e1e2e; padding-left: 10px; }
 
 .placeholder { font-size: 14px; line-height: 1.9; color: #444; font-style: italic; border-left: 2px solid #1e1e2e; padding-left: 16px; }
 .ai-text { font-size: 14px; line-height: 1.9; color: #ccc; }
@@ -202,12 +209,12 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 7. DESTEKÇİLER — AI -->
+    <!-- 7. DESTEKÇİLER — GRAFİK -->
     <div class="section" id="destekcilder">
       <div class="section-header">
         <span class="section-num">07</span>
         <span class="section-title">Destekçiler</span>
-        <span class="section-ai-badge">AI · Günlük</span>
+        <span class="section-graph-badge">Grafik · Statik</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
@@ -223,6 +230,7 @@ header span { font-size: 12px; color: #666; }
           </div>
         </div>
       </div>
+      <div class="graf-notu" id="destekci-graf-notu"></div>
     </div>
 
     <!-- 8. ETKİLENENLER — AI -->
@@ -270,7 +278,7 @@ header span { font-size: 12px; color: #666; }
 </div>
 
 <script>
-const WORKER = "https://rasad-news-proxy.rasad-news-proxy.workers.dev";
+const WORKER = "https://r.rasad-news-proxy.workers.dev";
 const CACHE_KEY = "ru-content";
 const CACHE_DATE_KEY = "ru-content-date";
 const today = new Date().toDateString();
@@ -307,30 +315,6 @@ function renderContent(data) {
       </div>`).join("");
   }
 
-  // Destekçiler — Rusya tarafı
-  if (data.rusya_taraf?.length) {
-    document.getElementById("rusya-taraf-list").innerHTML = data.rusya_taraf.map(d => `
-      <div class="destekci">
-        <div class="destekci-header">
-          <span class="destekci-ulke">${d.ulke || "—"}</span>
-          <span class="destekci-tip">${d.destek || ""}</span>
-        </div>
-        <p>${d.detay || ""}</p>
-      </div>`).join("");
-  }
-
-  // Destekçiler — Ukrayna tarafı
-  if (data.ukrayna_taraf?.length) {
-    document.getElementById("ukrayna-taraf-list").innerHTML = data.ukrayna_taraf.map(d => `
-      <div class="destekci">
-        <div class="destekci-header">
-          <span class="destekci-ulke">${d.ulke || "—"}</span>
-          <span class="destekci-tip">${d.destek || ""}</span>
-        </div>
-        <p>${d.detay || ""}</p>
-      </div>`).join("");
-  }
-
   // Etkilenenler
   if (data.etkilenenler?.length) {
     document.getElementById("etkilenenler-list").innerHTML = data.etkilenenler.map(e => `
@@ -354,6 +338,48 @@ function renderContent(data) {
   document.getElementById("guncelleme-tarihi").textContent =
     `Son güncelleme: ${new Date().toLocaleDateString("tr-TR")}${data.cached ? " (cache)" : ""}`;
 }
+
+function renderDestekciCard(d) {
+  const modalityClass = d.modality || "reported";
+  const modalityLabel = d.modality_label || d.modality || "";
+  return `
+    <div class="destekci">
+      <div class="destekci-header">
+        <span class="destekci-ulke">${d.ulke || "—"}</span>
+        <span class="destekci-tip">${d.destek || ""}</span>
+        <span class="modality-badge ${modalityClass}" style="margin-left:auto">${modalityLabel}</span>
+      </div>
+      <p>${d.detay || ""}</p>
+    </div>`;
+}
+
+function renderTaraflar(data) {
+  if (data.rusya_taraf?.length) {
+    document.getElementById("rusya-taraf-list").innerHTML =
+      data.rusya_taraf.map(renderDestekciCard).join("");
+  }
+  if (data.ukrayna_taraf?.length) {
+    document.getElementById("ukrayna-taraf-list").innerHTML =
+      data.ukrayna_taraf.map(renderDestekciCard).join("");
+  }
+  if (data.graf_notu) {
+    document.getElementById("destekci-graf-notu").textContent = data.graf_notu;
+  }
+}
+
+fetch(`${WORKER}/rusya-ukrayna-taraflar`)
+  .then(r => r.json())
+  .then(data => {
+    if (data.error) throw new Error(data.error);
+    renderTaraflar(data);
+  })
+  .catch(err => {
+    ["rusya-taraf-list", "ukrayna-taraf-list"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = `<div class="destekci"><p class="loading">Grafik verisi yüklenemedi.</p></div>`;
+    });
+    console.error("Taraflar grafik hatası:", err);
+  });
 
 // LocalStorage cache kontrolü
 const cachedContent = localStorage.getItem(CACHE_KEY);
