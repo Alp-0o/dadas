@@ -120,7 +120,7 @@ const RELATION_TYPES = [
 ];
 
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "https://alp-0o.github.io",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
@@ -699,7 +699,11 @@ async function handleKenarlar(env) {
 
   const today = new Date().toISOString().slice(0, 10);
   const cached = await kvGet(env, `kenar-cikart-${today}`);
-  const guncel = cached ? (JSON.parse(cached).extracted_edges || []) : [];
+  const rawGuncel = cached ? (JSON.parse(cached).extracted_edges || []) : [];
+
+  // Statik grafikte zaten tanımlı (show_in_flow: false dahil) edgeleri güncel listesinden çıkar
+  const staticKeys = new Set(RU_EDGES.map(e => `${e.source_id}|${e.target_id}|${e.type}`));
+  const guncel = rawGuncel.filter(e => !staticKeys.has(`${e.source_id}|${e.target_id}|${e.type}`));
 
   return jsonResponse({ temel_baglamlar: temel, guncel_baglantılar: guncel, date: today });
 }

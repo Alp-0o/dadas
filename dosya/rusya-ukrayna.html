@@ -566,8 +566,8 @@ function renderKenarlar(data) {
     : `<p class="kenar-empty">Bugün henüz bağlantı çıkarılmamış — sayfa yüklenirken işleniyor olabilir.</p>`;
 }
 
-const KENAR_CACHE_KEY = "ru-kenarlar";
-const KENAR_CACHE_DATE_KEY = "ru-kenarlar-date";
+const KENAR_CACHE_KEY = "ru-kenarlar-v2";
+const KENAR_CACHE_DATE_KEY = "ru-kenarlar-v2-date";
 
 const cachedKenar = localStorage.getItem(KENAR_CACHE_KEY);
 const cachedKenarDate = localStorage.getItem(KENAR_CACHE_DATE_KEY);
