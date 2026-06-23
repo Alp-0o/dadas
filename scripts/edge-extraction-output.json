@@ -1,0 +1,90 @@
+{
+  "test_tarihi": "2026-06-23T07:19:05.445Z",
+  "model": "llama-3.3-70b-versatile",
+  "test_haberleri": [
+    {
+      "domain": "reuters.com",
+      "title": "Russia launches drone strikes on Kyiv, Ukraine air defense intercepts most",
+      "published": "2026-06-20"
+    },
+    {
+      "domain": "apnews.com",
+      "title": "US announces additional $500 million military aid package for Ukraine",
+      "published": "2026-06-19"
+    },
+    {
+      "domain": "dw.com",
+      "title": "NATO allies agree to increase defense spending following Eastern flank pressure",
+      "published": "2026-06-18"
+    }
+  ],
+  "validation": {
+    "errors": [],
+    "warnings": []
+  },
+  "result": {
+    "extracted_edges": [
+      {
+        "source_id": "country:russia",
+        "target_id": "country:ukraine",
+        "type": "attacks",
+        "directed": true,
+        "polarity": "oppose",
+        "modality": "reported",
+        "valid_from": "2026-06-20",
+        "provenance": [
+          {
+            "domain": "reuters.com",
+            "published": "2026-06-20",
+            "source_type": "batı medyası"
+          }
+        ],
+        "attributes": {
+          "excerpt": "Russian forces launched a massive drone attack on the Ukrainian capital overnight."
+        }
+      },
+      {
+        "source_id": "country:usa",
+        "target_id": "country:ukraine",
+        "type": "supplies",
+        "directed": true,
+        "polarity": "support",
+        "modality": "verified",
+        "valid_from": "2026-06-19",
+        "provenance": [
+          {
+            "domain": "apnews.com",
+            "published": "2026-06-19",
+            "source_type": "batı medyası"
+          }
+        ],
+        "attributes": {
+          "excerpt": "The Biden administration announced a new military assistance package for Ukraine."
+        }
+      },
+      {
+        "source_id": "org:nato",
+        "target_id": "country:ukraine",
+        "type": "supports",
+        "directed": true,
+        "polarity": "support",
+        "modality": "reported",
+        "valid_from": "2026-06-18",
+        "provenance": [
+          {
+            "domain": "dw.com",
+            "published": "2026-06-18",
+            "source_type": "batı medyası"
+          }
+        ],
+        "attributes": {
+          "excerpt": "The alliance also reaffirmed support for Ukraine's territorial integrity."
+        }
+      }
+    ],
+    "unresolved_entities": [
+      "Biden administration",
+      "Obolon district"
+    ]
+  }
+}

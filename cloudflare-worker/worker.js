@@ -49,6 +49,54 @@ const RU_EDGES = [
   },
 ];
 
+// --- KAYNAK ETİKETLEME (paylaşılan) ---
+const SRC_RUSSIA_STATE = [
+  "sputnik", "rt.com", "tass.ru", "ria.ru", "life.ru",
+  "5-tv.ru", "runews24", "anna-news", "gazeta.ru", "kremlin.ru",
+  "rg.ru", "vesti.ru", "lenta.ru",
+];
+const SRC_UKRAINE = [
+  "unian.net", "obozrevatel.com", "glavred.info", "korrespondent.net",
+  "24tv.ua", "delo.ua", "pravda.com.ua", "ukrainska.pravda.com.ua",
+  "war.obozrevatel.com", "kontrakty.ua",
+];
+const SRC_WESTERN = [
+  // ABD
+  "apnews.com", "reuters.com", "nytimes.com", "washingtonpost.com",
+  "wsj.com", "bloomberg.com", "axios.com", "thehill.com", "politico.com",
+  "foreignpolicy.com", "forbes.com", "cbsnews.com", "nbcnews.com",
+  "cnn.com", "npr.org", "vox.com", "businessinsider.com",
+  "ajc.com", "inquirer.com", "nationalpost.com",
+  // İngiltere
+  "bbc.com", "bbc.co.uk", "theguardian.com", "ft.com", "economist.com",
+  "independent.co.uk", "telegraph.co.uk", "mirror.co.uk", "lbc.co.uk",
+  "thetimes.co.uk", "dailymail.co.uk",
+  // Avrupa
+  "dw.com", "france24.com", "rfi.fr", "euronews.com",
+  "rferl.org", "lemonde.fr", "spiegel.de",
+  // Diğer Batı
+  "abc.net.au", "cbc.ca", "globeandmail.com",
+];
+
+function getDomain(url) {
+  try { return new URL(url).hostname.replace("www.", ""); } catch { return url; }
+}
+
+function tagSource(domain) {
+  const s = (domain || "").toLowerCase();
+  if (SRC_RUSSIA_STATE.some(x => s.includes(x))) return "rusya devlet medyası";
+  if (SRC_UKRAINE.some(x => s.includes(x)))       return "ukrayna kaynağı";
+  if (SRC_WESTERN.some(x => s.includes(x)))        return "batı medyası";
+  return "diğer";
+}
+
+// Kapalı ilişki sözlüğü — LLM sadece bu type değerlerini kullanabilir
+const RELATION_TYPES = [
+  "commands", "supports", "opposes", "attacks", "defends",
+  "controls", "located_in", "affects", "sanctions",
+  "negotiates", "supplies", "funded_by", "mediates",
+];
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "https://alp-0o.github.io",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
@@ -158,23 +206,6 @@ async function handleRusyaUkraynaContent(env) {
   // Gürültü filtresi
   const NOISE = ["world cup", "visa", "pizza", "ethanol", "biodiesel", "lng", "etanol", "celebrity", "fashion"];
   const filtered = newsData.articles.filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)));
-
-  // Kaynak etiketleme
-  const RUSSIA_STATE = ["sputnik", "rt.com", "tass.ru", "ria.ru", "life.ru", "5-tv.ru", "runews24", "anna-news"];
-  const UKRAINE_SRC = ["unian.net", "obozrevatel.com", "glavred.info", "korrespondent.net", "24tv.ua", "delo.ua", "pravda.com.ua"];
-  const WESTERN = ["bbc.com", "reuters.com", "theguardian.com", "nytimes.com", "washingtonpost.com", "inquirer.com", "nationalpost.com", "lbc.co.uk", "dw.com", "ft.com", "politico.com"];
-
-  function getDomain(url) {
-    try { return new URL(url).hostname.replace("www.", ""); } catch { return url; }
-  }
-
-  function tagSource(domain) {
-    const s = (domain || "").toLowerCase();
-    if (RUSSIA_STATE.some(x => s.includes(x))) return "rusya devlet medyası";
-    if (UKRAINE_SRC.some(x => s.includes(x))) return "ukrayna kaynağı";
-    if (WESTERN.some(x => s.includes(x))) return "batı medyası";
-    return "diğer";
-  }
 
   function formatDate(iso) {
     if (!iso) return "tarih bilinmiyor";
@@ -315,6 +346,167 @@ function handleRusyaUkraynaTaraflar() {
   });
 }
 
+// --- ADIM 3: HABER → KENAR ÇIKARIMI ---
+
+function buildEdgeExtractionPrompt(articles) {
+  const entityList = RU_ENTITIES
+    .map(e => `- ${e.id}  (${e.canonical_name}, ${e.type})`)
+    .join("\n");
+  const typeList = RELATION_TYPES.join(", ");
+  const newsText = articles
+    .map((a, i) => `[${i + 1}] tarih:${a.tarih} | kaynak:${a.kaynak} | tip:${a.kaynak_tipi}\nbaşlık: ${a.baslik}\nözet: ${a.ozet || "-"}`)
+    .join("\n\n");
+
+  return `Sen bir jeopolitik ilişki çıkarma motorusun. Sana haber metinleri verilecek. Görevin, bu haberlerden tespit ettiğin varlıklar arası ilişkileri (kenarları) çıkarmak.
+
+KISITLAR — bunlara uymak zorunludur:
+1. source_id ve target_id SADECE şu entity listesinden seçilmeli — listede olmayan ID üretemezsin:
+${entityList}
+
+2. type SADECE şu değerlerden biri olabilir: ${typeList}
+
+3. modality:
+- "verified": birden fazla bağımsız kaynak doğruladı
+- "reported": en az bir kaynak haberleştirdi, çapraz doğrulama yok
+- "inferred": haber bunu doğrudan söylemiyor ama mantıksal çıkarım yapılabilir
+- "claimed": tek taraflı iddia, doğrulanmamış
+
+4. Haberde açıkça desteklenmeyen ilişki üretme.
+5. Listede olmayan ama haberde geçen önemli entityleri unresolved_entities dizisine ekle.
+6. provenance'ı haber kaynağından doldur — kendi ürettiğin kaynak yazma.
+7. polarity: "support", "oppose", "neutral" değerlerinden biri.
+8. excerpt: bu ilişkiyi destekleyen haber cümlesinden kısa alıntı.
+9. SOMUT EYLEM KURALI: Kenar ancak somut bir eylemi, kararı veya durumu kanıtlıyorsa üretilebilir (saldırı, yardım paketi, yaptırım, anlaşma, kontrol, tedarik vb.). Siyasi söylem, yorum veya retorik alıntılar ("X dedi ki...", "Y'ye göre...", "Z'nin iddiasına göre...") somut eylemin kendisi değildir — bu tür cümlelere dayanan kenar üretme.
+10. TEKİL İLİŞKİ KURALI: Aynı source_id + target_id + type kombinasyonunu birden fazla kez üretme.
+
+HABERLER:
+${newsText}
+
+Yalnızca aşağıdaki JSON formatını döndür. JSON dışında HİÇBİR ŞEY yazma.
+
+{
+  "extracted_edges": [
+    {
+      "source_id": "entity:id",
+      "target_id": "entity:id",
+      "type": "tip",
+      "directed": true,
+      "polarity": "support|oppose|neutral",
+      "modality": "verified|reported|inferred|claimed",
+      "valid_from": "YYYY-MM-DD",
+      "provenance": [{"domain": "domain.com", "published": "YYYY-MM-DD", "source_type": "batı medyası|ukrayna kaynağı|rusya devlet medyası|diğer"}],
+      "attributes": {"excerpt": "alıntı"}
+    }
+  ],
+  "unresolved_entities": ["listede olmayan varlık adları"]
+}`;
+}
+
+function validateEdges(edges) {
+  const validIds = new Set(RU_ENTITIES.map(e => e.id));
+  const validTypes = new Set(RELATION_TYPES);
+  const errors = [];
+  for (const [i, edge] of edges.entries()) {
+    if (!validIds.has(edge.source_id)) errors.push(`edge[${i}]: source_id geçersiz "${edge.source_id}"`);
+    if (!validIds.has(edge.target_id)) errors.push(`edge[${i}]: target_id geçersiz "${edge.target_id}"`);
+    if (!validTypes.has(edge.type))    errors.push(`edge[${i}]: type geçersiz "${edge.type}"`);
+    if (edge.source_id === edge.target_id) errors.push(`edge[${i}]: self-loop`);
+  }
+  return errors;
+}
+
+async function handleKenarCikart(env) {
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = `kenar-cikart-${today}`;
+
+  const cached = await kvGet(env, cacheKey);
+  if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
+
+  // GNews'ten haber çek
+  const res = await fetch(`https://gnews.io/api/v4/search?q=Russia Ukraine war&lang=en&max=8&apikey=${env.GNEWS_API_KEY}`);
+  if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
+  const newsData = await res.json();
+
+  const NOISE = ["world cup", "visa", "pizza", "ethanol", "biodiesel", "celebrity", "fashion"];
+  function fmtDate(iso) { try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; } }
+
+  const articles = newsData.articles
+    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
+    .map(a => {
+      const domain = getDomain(a.url);
+      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih: fmtDate(a.publishedAt) };
+    });
+
+  if (!articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
+
+  const prompt = buildEdgeExtractionPrompt(articles);
+  const raw = await groqFetch(env, prompt, 2000, true);
+
+  let result;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("JSON bulunamadı");
+    result = JSON.parse(m[0]);
+  } catch (e) {
+    return jsonResponse({ error: "JSON parse hatası", raw }, 500);
+  }
+
+  const errors = validateEdges(result.extracted_edges || []);
+  const output = {
+    date: today,
+    source_article_count: articles.length,
+    extracted_edges: result.extracted_edges || [],
+    unresolved_entities: result.unresolved_entities || [],
+    validation_errors: errors,
+  };
+
+  // Validasyon hatasız ise cache'e yaz ve log'a ekle
+  if (!errors.length) {
+    await kvPut(env, cacheKey, JSON.stringify(output));
+    await appendKenarLog(env, {
+      date: today,
+      edge_count: output.extracted_edges.length,
+      unresolved_entities: output.unresolved_entities,
+      suspicious_excerpts: output.extracted_edges
+        .filter(e => !e.attributes?.excerpt || e.attributes.excerpt.split(" ").length < 5)
+        .map(e => ({ edge: `${e.source_id} -[${e.type}]→ ${e.target_id}`, excerpt: e.attributes?.excerpt || "" })),
+    });
+  }
+
+  return jsonResponse({ ...output, cached: false });
+}
+
+async function appendKenarLog(env, entry) {
+  if (!env.RASAD_CACHE) return;
+  const raw = await env.RASAD_CACHE.get("kenar-log");
+  const log = raw ? JSON.parse(raw) : [];
+  // Aynı güne ait eski kaydı güncelle, yoksa ekle
+  const idx = log.findIndex(e => e.date === entry.date);
+  if (idx >= 0) log[idx] = entry; else log.push(entry);
+  await env.RASAD_CACHE.put("kenar-log", JSON.stringify(log));
+}
+
+async function handleKenarLog(env) {
+  if (!env.RASAD_CACHE) return jsonResponse({ error: "KV bağlı değil" }, 503);
+  const raw = await env.RASAD_CACHE.get("kenar-log");
+  if (!raw) return jsonResponse({ log: [], message: "Henüz kayıt yok" });
+
+  const log = JSON.parse(raw);
+
+  // unresolved_entities frekans sayımı
+  const freq = {};
+  for (const entry of log) {
+    for (const entity of entry.unresolved_entities || []) {
+      freq[entity] = (freq[entity] || 0) + 1;
+    }
+  }
+  const sorted = Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+
+  return jsonResponse({ entry_count: log.length, unresolved_entity_frequency: sorted, log });
+}
+
 // --- ROUTER ---
 
 export default {
@@ -332,6 +524,8 @@ export default {
       if (path === "/news-comment") return await handleNewsComment(env);
       if (path === "/rusya-ukrayna-content") return await handleRusyaUkraynaContent(env);
       if (path === "/rusya-ukrayna-taraflar") return handleRusyaUkraynaTaraflar();
+      if (path === "/rusya-ukrayna-kenar-cikart") return await handleKenarCikart(env);
+      if (path === "/kenar-log") return await handleKenarLog(env);
       return jsonResponse({ error: "Geçersiz endpoint." }, 404);
     } catch (err) {
       return jsonResponse({ error: "Worker iç hatası", detail: err.message }, 500);
