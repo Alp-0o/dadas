@@ -1,16 +1,36 @@
 // Graf verisi — data/dossiers/rusya-ukrayna/ kaynaklı, render sırasında doğrudan okunur
 const RU_ENTITIES = [
-  { id: "country:russia",  canonical_name: "Rusya Federasyonu",          type: "country",
-    aliases: ["Rusya", "Russia", "Россия", "RF"], sector_tags: ["jeopolitik", "enerji", "askeri"] },
-  { id: "country:ukraine", canonical_name: "Ukrayna",                     type: "country",
-    aliases: ["Ukraine", "Україна", "UA"],         sector_tags: ["jeopolitik", "askeri"] },
-  { id: "country:usa",     canonical_name: "Amerika Birleşik Devletleri", type: "country",
-    aliases: ["ABD", "USA", "Amerika"],            sector_tags: ["jeopolitik", "askeri", "ekonomi"] },
-  { id: "org:nato",        canonical_name: "NATO",                        type: "organization",
-    aliases: ["Kuzey Atlantik Antlaşması Örgütü"], sector_tags: ["jeopolitik", "askeri"] },
+  { id: "country:russia",   canonical_name: "Rusya Federasyonu",          type: "country",
+    aliases: ["Rusya", "Russia", "Россия", "RF"],  sector_tags: ["jeopolitik", "enerji", "askeri"] },
+  { id: "country:ukraine",  canonical_name: "Ukrayna",                    type: "country",
+    aliases: ["Ukraine", "Україна", "UA"],          sector_tags: ["jeopolitik", "askeri"] },
+  { id: "country:usa",      canonical_name: "Amerika Birleşik Devletleri",type: "country",
+    aliases: ["ABD", "USA", "Amerika"],             sector_tags: ["jeopolitik", "askeri", "ekonomi"] },
+  { id: "org:nato",         canonical_name: "NATO",                       type: "organization",
+    aliases: ["Kuzey Atlantik Antlaşması Örgütü"],  sector_tags: ["jeopolitik", "askeri"] },
+  { id: "country:china",    canonical_name: "Çin Halk Cumhuriyeti",       type: "country",
+    aliases: ["Çin", "China", "PRC", "中国"],       sector_tags: ["jeopolitik", "ekonomi"] },
+  { id: "country:belarus",  canonical_name: "Belarus",                    type: "country",
+    aliases: ["Beyaz Rusya", "Belarussia", "Беларусь"], sector_tags: ["jeopolitik", "askeri"] },
+  { id: "org:eu",           canonical_name: "Avrupa Birliği",             type: "organization",
+    aliases: ["AB", "EU", "European Union"],        sector_tags: ["jeopolitik", "ekonomi", "yaptırım"] },
+  { id: "country:poland",   canonical_name: "Polonya",                    type: "country",
+    aliases: ["Poland", "Polska"],                  sector_tags: ["jeopolitik", "askeri", "lojistik"] },
+  { id: "country:uk",       canonical_name: "Birleşik Krallık",           type: "country",
+    aliases: ["UK", "Britain", "İngiltere"],        sector_tags: ["jeopolitik", "askeri"] },
+  { id: "country:germany",  canonical_name: "Almanya",                    type: "country",
+    aliases: ["Germany", "Deutschland"],            sector_tags: ["jeopolitik", "ekonomi", "enerji"] },
+  { id: "sector:avrupa-enerji",   canonical_name: "Avrupa Enerji Piyasaları", type: "sector",
+    aliases: ["European energy markets", "Avrupa enerji krizi"], sector_tags: ["enerji", "ekonomi"] },
+  { id: "sector:kuresel-tahil",   canonical_name: "Küresel Tahıl Piyasaları", type: "sector",
+    aliases: ["global grain markets", "wheat market", "buğday piyasası"], sector_tags: ["tarım", "ekonomi"] },
+  { id: "sector:ukrayna-sivil",   canonical_name: "Ukrayna Sivil Halkı",       type: "sector",
+    aliases: ["Ukrainian civilians", "Ukrayna mültecileri"], sector_tags: ["insani yardım"] },
+  { id: "sector:global-savunma",  canonical_name: "Küresel Savunma Sektörü",  type: "sector",
+    aliases: ["defense industry", "silah endüstrisi"],         sector_tags: ["savunma", "ekonomi"] },
   { id: "event:tam-saldiri-2022-02-24", canonical_name: "Tam Ölçekli Saldırı (24 Şubat 2022)", type: "event" },
-  { id: "resource:dogalgaz-rus", canonical_name: "Rus Doğal Gazı",            type: "resource" },
-  { id: "place:donbas",     canonical_name: "Donbas",                          type: "place" },
+  { id: "resource:dogalgaz-rus",  canonical_name: "Rus Doğal Gazı",            type: "resource" },
+  { id: "place:donbas",           canonical_name: "Donbas",                     type: "place" },
 ];
 
 const RU_EDGES = [
@@ -22,6 +42,7 @@ const RU_EDGES = [
   {
     id: "edge:00002", source_id: "event:tam-saldiri-2022-02-24", target_id: "place:donbas",
     type: "located_in", polarity: "neutral", modality: "reported", valid_from: "2022-02-24",
+    show_in_flow: false,
     attributes: { note: "Çatışmanın ağırlık merkezi" },
   },
   {
@@ -37,6 +58,7 @@ const RU_EDGES = [
   {
     id: "edge:00005", source_id: "country:russia", target_id: "resource:dogalgaz-rus",
     type: "controls", polarity: "neutral", modality: "reported", valid_from: "2022-02-24",
+    show_in_flow: false,
     attributes: { mechanism: "Gazprom devlet tekeli" },
   },
   {
@@ -290,58 +312,72 @@ Yalnızca aşağıdaki geçerli JSON formatını döndür. JSON dışında hiçb
 
 // --- YENİ: GRAFIK TABANLI TARAFLAR + DESTEKÇİLER ---
 
-function handleRusyaUkraynaTaraflar() {
+async function handleRusyaUkraynaTaraflar(env) {
   const entityMap = Object.fromEntries(RU_ENTITIES.map(e => [e.id, e]));
 
   function modalityLabel(m) {
-    if (m === "verified") return "doğrulanmış";
-    if (m === "reported") return "haberlenmiş";
-    if (m === "inferred") return "çıkarım";
-    if (m === "claimed") return "iddia";
-    return m;
+    const map = { verified: "doğrulanmış", reported: "haberlenmiş", inferred: "çıkarım", claimed: "iddia" };
+    return map[m] || m;
   }
 
   function entityCard(id) {
     const e = entityMap[id];
     if (!e) return null;
-    return {
-      id: e.id,
-      canonical_name: e.canonical_name,
+    return { id: e.id, canonical_name: e.canonical_name,
       aliases: (e.aliases || []).filter(a => a !== e.canonical_name).slice(0, 4),
-      sector_tags: e.sector_tags || [],
-      type: e.type,
+      sector_tags: e.sector_tags || [], type: e.type };
+  }
+
+  function edgeToDestekci(e, isStatic) {
+    const entity = entityMap[e.source_id];
+    return {
+      ulke: entity?.canonical_name || e.source_id,
+      destek: e.attributes?.support_type || e.type,
+      detay: e.attributes?.note || e.attributes?.excerpt || "",
+      modality: e.modality,
+      modality_label: modalityLabel(e.modality),
+      valid_from: e.valid_from,
+      edge_id: e.id || null,
+      is_static: isStatic,
     };
   }
 
-  // Destekçi kenarları: type=supports
-  function destekcilar(target_id) {
-    return RU_EDGES
-      .filter(e => e.type === "supports" && e.target_id === target_id && e.polarity === "support")
-      .map(e => {
-        const entity = entityMap[e.source_id];
-        return {
-          ulke: entity?.canonical_name || e.source_id,
-          destek: e.attributes?.support_type || e.type,
-          detay: e.attributes?.note || "",
-          modality: e.modality,
-          modality_label: modalityLabel(e.modality),
-          valid_from: e.valid_from,
-          edge_id: e.id,
-        };
-      });
-  }
+  // Statik destekçiler (RU_EDGES'den)
+  const staticRusya   = RU_EDGES.filter(e => e.type === "supports" && e.target_id === "country:russia"  && e.polarity === "support");
+  const staticUkrayna = RU_EDGES.filter(e => e.type === "supports" && e.target_id === "country:ukraine" && e.polarity === "support");
+
+  // Dinamik destekçiler (KV cache'den)
+  const today = new Date().toISOString().slice(0, 10);
+  const cached = await kvGet(env, `destekci-kenarlar-${today}`);
+  const dynEdges = cached ? (JSON.parse(cached).extracted_edges || []) : [];
+
+  const dynRusya   = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by") && e.target_id === "country:russia");
+  const dynUkrayna = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by") && e.target_id === "country:ukraine");
+
+  // Karşı çıkanlar (opposes/sanctions russia = ukrayna tarafı, opposes ukraine = rusya tarafı)
+  const dynRusyaOpposes   = dynEdges.filter(e => (e.type === "opposes" || e.type === "sanctions") && e.target_id === "country:ukraine");
+  const dynUkraynaOpposes = dynEdges.filter(e => (e.type === "opposes" || e.type === "sanctions") && e.target_id === "country:russia");
 
   return jsonResponse({
     rusya: {
       entity: entityCard("country:russia"),
-      destekcilar: destekcilar("country:russia"),
-      graf_notu: "Rusya destekçisi düğümler (İran, K.Kore, Beyaz Rusya) henüz eklenmedi.",
+      destekcilar: [
+        ...staticRusya.map(e => edgeToDestekci(e, true)),
+        ...dynRusya.map(e => edgeToDestekci(e, false)),
+        ...dynRusyaOpposes.map(e => edgeToDestekci(e, false)),
+      ],
+      has_dynamic: dynRusya.length + dynRusyaOpposes.length > 0,
     },
     ukrayna: {
       entity: entityCard("country:ukraine"),
-      destekcilar: destekcilar("country:ukraine"),
+      destekcilar: [
+        ...staticUkrayna.map(e => edgeToDestekci(e, true)),
+        ...dynUkrayna.map(e => edgeToDestekci(e, false)),
+        ...dynUkraynaOpposes.map(e => edgeToDestekci(e, false)),
+      ],
+      has_dynamic: dynUkrayna.length + dynUkraynaOpposes.length > 0,
     },
-    source: "graph",
+    source: "graph+pipeline",
     schema_version: "1.0",
   });
 }
@@ -476,11 +512,179 @@ async function handleKenarCikart(env) {
   return jsonResponse({ ...output, cached: false });
 }
 
+// --- TARAFLAR: DESTEKÇİ KENAR ÇIKARIMI ---
+
+function buildDestekciPrompt(articles, entityList, typeList) {
+  const newsText = articles.map((a, i) =>
+    `[${i + 1}] tarih:${a.tarih} | kaynak:${a.kaynak} | tip:${a.kaynak_tipi}\nbaşlık: ${a.baslik}\nözet: ${a.ozet || "-"}`
+  ).join("\n\n");
+
+  return `Sen bir jeopolitik ilişki çıkarma motorusun. Görevin: bu haberlerden Rusya-Ukrayna savaşındaki TARAF ve DESTEKÇİ ilişkilerini çıkarmak.
+
+SADECE şu ilişki tipleri kabul edilir: ${typeList}
+SADECE şu entity ID'leri kabul edilir:
+${entityList}
+
+KISITLAR:
+1. Her kenar bir ülkenin/örgütün başka bir ülkeyi/tarafı nasıl desteklediğini veya karşı çıktığını göstermeli.
+2. excerpt somut bir eylemi kanıtlamalı (silah yardımı, mali destek, siyasi destek, yaptırım, vs.).
+3. Aynı source+target+type kombinasyonunu tekrarlama.
+4. Haberde açıkça geçmeyen ilişki üretme.
+5. Listede olmayan entity'leri unresolved_entities'e ekle.
+
+HABERLER:
+${newsText}
+
+Sadece JSON döndür:
+{"extracted_edges":[{"source_id":"...","target_id":"...","type":"...","directed":true,"polarity":"support|oppose|neutral","modality":"verified|reported|inferred|claimed","valid_from":"YYYY-MM-DD","provenance":[{"domain":"...","published":"YYYY-MM-DD","source_type":"..."}],"attributes":{"excerpt":"..."}}],"unresolved_entities":[]}`;
+}
+
+async function handleDestekciGuncelle(env) {
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = `destekci-kenarlar-${today}`;
+
+  const cached = await kvGet(env, cacheKey);
+  if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
+
+  const query = "Russia Ukraine support alliance";
+  const res = await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=10&apikey=${env.GNEWS_API_KEY}`);
+  if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
+  const newsData = await res.json();
+
+  const NOISE = ["world cup", "visa", "pizza", "celebrity", "fashion", "sport"];
+  function fmtDate(iso) { try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; } }
+
+  const articles = newsData.articles
+    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
+    .map(a => {
+      const domain = getDomain(a.url);
+      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih: fmtDate(a.publishedAt) };
+    });
+
+  if (!articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
+
+  const DESTEKCI_TYPES = ["supports", "opposes", "sanctions", "supplies", "funded_by", "negotiates", "mediates"];
+  const entityList = RU_ENTITIES.map(e => `- ${e.id}  (${e.canonical_name})`).join("\n");
+  const prompt = buildDestekciPrompt(articles, entityList, DESTEKCI_TYPES.join(", "));
+  const raw = await groqFetch(env, prompt, 2000, true);
+
+  let result;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("JSON bulunamadı");
+    result = JSON.parse(m[0]);
+  } catch (e) {
+    return jsonResponse({ error: "JSON parse hatası", raw }, 500);
+  }
+
+  const errors = validateEdges(result.extracted_edges || []);
+  const output = {
+    date: today,
+    source_article_count: articles.length,
+    extracted_edges: result.extracted_edges || [],
+    unresolved_entities: result.unresolved_entities || [],
+    validation_errors: errors,
+  };
+
+  if (!errors.length) {
+    await kvPut(env, cacheKey, JSON.stringify(output));
+    await appendKenarLog(env, {
+      date: today + "-destekci",
+      edge_count: output.extracted_edges.length,
+      unresolved_entities: output.unresolved_entities,
+      suspicious_excerpts: output.extracted_edges
+        .filter(e => !e.attributes?.excerpt || e.attributes.excerpt.split(" ").length < 5)
+        .map(e => ({ edge: `${e.source_id}-[${e.type}]->${e.target_id}`, excerpt: e.attributes?.excerpt || "" })),
+    });
+  }
+
+  return jsonResponse({ ...output, cached: false });
+}
+
+// --- ETKİLENENLER: AFFECTS KENAR ÇIKARIMI ---
+
+function buildEtkilenmePrompt(articles, entityList) {
+  const newsText = articles.map((a, i) =>
+    `[${i + 1}] tarih:${a.tarih} | kaynak:${a.kaynak} | tip:${a.kaynak_tipi}\nbaşlık: ${a.baslik}\nözet: ${a.ozet || "-"}`
+  ).join("\n\n");
+
+  return `Sen bir jeopolitik ilişki çıkarma motorusun. Görevin: Rusya-Ukrayna savaşının hangi sektörleri, piyasaları ve toplulukları nasıl ETKİLEDİĞİNİ çıkarmak.
+
+SADECE "affects" tipi kenar üret. Başka tip kabul edilmez.
+SADECE şu entity ID'leri kabul edilir:
+${entityList}
+
+KISITLAR:
+1. excerpt somut bir etkiyi kanıtlamalı (fiyat artışı, arz kesintisi, göç, harcama artışı, vs.).
+2. Aynı source+target kombinasyonunu tekrarlama.
+3. Haberde açıkça geçmeyen etki üretme.
+4. Listede olmayan entity'leri unresolved_entities'e ekle.
+5. polarity: savaşın etkilenen taraf için olumsuz etkisi "oppose", fırsata dönüşmesi "support", olgusal "neutral".
+
+HABERLER:
+${newsText}
+
+Sadece JSON döndür:
+{"extracted_edges":[{"source_id":"...","target_id":"...","type":"affects","directed":true,"polarity":"oppose|support|neutral","modality":"verified|reported|inferred|claimed","valid_from":"YYYY-MM-DD","provenance":[{"domain":"...","published":"YYYY-MM-DD","source_type":"..."}],"attributes":{"excerpt":"...","impact_summary":"tek cümle Türkçe etki özeti"}}],"unresolved_entities":[]}`;
+}
+
+async function handleEtkilenmeGuncelle(env) {
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = `etkilenme-kenarlar-${today}`;
+
+  const cached = await kvGet(env, cacheKey);
+  if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
+
+  const query = "Europe energy war";
+  const res = await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=10&apikey=${env.GNEWS_API_KEY}`);
+  if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
+  const newsData = await res.json();
+
+  const NOISE = ["world cup", "visa", "pizza", "celebrity", "fashion", "sport"];
+  function fmtDate(iso) { try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; } }
+
+  const articles = newsData.articles
+    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
+    .map(a => {
+      const domain = getDomain(a.url);
+      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih: fmtDate(a.publishedAt) };
+    });
+
+  if (!articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
+
+  const entityList = RU_ENTITIES.map(e => `- ${e.id}  (${e.canonical_name})`).join("\n");
+  const prompt = buildEtkilenmePrompt(articles, entityList);
+  const raw = await groqFetch(env, prompt, 2000, true);
+
+  let result;
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("JSON bulunamadı");
+    result = JSON.parse(m[0]);
+  } catch (e) {
+    return jsonResponse({ error: "JSON parse hatası", raw }, 500);
+  }
+
+  // Sadece affects kenarları kabul et
+  const affectsOnly = (result.extracted_edges || []).filter(e => e.type === "affects");
+  const errors = validateEdges(affectsOnly);
+  const output = {
+    date: today,
+    source_article_count: articles.length,
+    extracted_edges: affectsOnly,
+    unresolved_entities: result.unresolved_entities || [],
+    validation_errors: errors,
+  };
+
+  if (!errors.length) await kvPut(env, cacheKey, JSON.stringify(output));
+  return jsonResponse({ ...output, cached: false });
+}
+
 async function handleKenarlar(env) {
   const entityMap = Object.fromEntries(RU_ENTITIES.map(e => [e.id, e]));
   const MODALITY_TR = { verified: "doğrulanmış", reported: "haberlenmiş", inferred: "çıkarım", claimed: "iddia" };
 
-  const temel = RU_EDGES.map(e => ({
+  const temel = RU_EDGES.filter(e => e.show_in_flow !== false).map(e => ({
     source_id: e.source_id,
     source_name: entityMap[e.source_id]?.canonical_name || e.source_id,
     target_id: e.target_id,
@@ -547,9 +751,11 @@ export default {
       if (path === "/metals-comment") return await handleMetalsComment(env);
       if (path === "/news-comment") return await handleNewsComment(env);
       if (path === "/rusya-ukrayna-content") return await handleRusyaUkraynaContent(env);
-      if (path === "/rusya-ukrayna-taraflar") return handleRusyaUkraynaTaraflar();
+      if (path === "/rusya-ukrayna-taraflar") return await handleRusyaUkraynaTaraflar(env);
       if (path === "/rusya-ukrayna-kenar-cikart") return await handleKenarCikart(env);
       if (path === "/rusya-ukrayna-kenarlar") return await handleKenarlar(env);
+      if (path === "/rusya-ukrayna-destekci-guncelle") return await handleDestekciGuncelle(env);
+      if (path === "/rusya-ukrayna-etkilenme-guncelle") return await handleEtkilenmeGuncelle(env);
       if (path === "/kenar-log") return await handleKenarLog(env);
       return jsonResponse({ error: "Geçersiz endpoint." }, 404);
     } catch (err) {

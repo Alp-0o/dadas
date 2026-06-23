@@ -104,6 +104,16 @@ header span { font-size: 12px; color: #666; }
 .footer-meta { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1e1e2e; font-size: 11px; color: #333; }
 
 /* --- KEŞFEDİLEN BAĞLANTILAR --- */
+.destekci.dynamic { opacity: 0.85; border-left: 2px solid #3a3a6a; }
+.destekci.dynamic::before { content: "▸ güncel"; font-size: 9px; color: #5a5a9a; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+.etkilenme-list { display: flex; flex-direction: column; gap: 10px; }
+.etkilenme-card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #3a2a4a; }
+.etkilenme-path { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.etkilenme-kaynak { font-size: 12px; color: #666; font-style: italic; }
+.etkilenme-target { font-size: 14px; font-weight: 600; color: #d0c0ff; }
+.etkilenme-ozet { font-size: 13px; color: #bbb; line-height: 1.7; margin-top: 6px; }
+.etkilenme-meta { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+
 .section-pipeline-badge { font-size: 9px; color: #1a6a3a; background: #001a0d; border: 1px solid #004a20; border-radius: 3px; padding: 2px 6px; margin-left: auto; }
 .kenar-list { display: flex; flex-direction: column; gap: 8px; }
 .kenar-card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #1e1e2e; }
@@ -166,7 +176,7 @@ header span { font-size: 12px; color: #666; }
       <a href="#son-durum"><span class="num">05</span>Son Durum<span class="ai-tag">AI</span></a>
       <a href="#kronoloji"><span class="num">06</span>Zincirleme Haberler<span class="ai-tag">AI</span></a>
       <a href="#destekcilder"><span class="num">07</span>Destekçiler</a>
-      <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">AI</span></a>
+      <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">Grafik</span></a>
       <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları<span class="ai-tag">AI</span></a>
       <a href="#baglantılar"><span class="num">10</span>Keşfedilen Bağlantılar<span class="ai-tag">Grafik</span></a>
       <a href="#sorular"><span class="num">11</span>Açık Sorular</a>
@@ -254,8 +264,8 @@ header span { font-size: 12px; color: #666; }
         <span class="section-title">Etkilenenler</span>
         <span class="section-ai-badge">AI · Günlük</span>
       </div>
-      <div class="etkilenen-list" id="etkilenenler-list">
-        <div class="etkilenen"><h4>—</h4><p class="loading">Yükleniyor...</p></div>
+      <div class="etkilenme-list" id="etkilenenler-list">
+        <div class="etkilenme-card"><p class="loading">Yükleniyor...</p></div>
       </div>
     </div>
 
@@ -352,15 +362,6 @@ function renderContent(data) {
       </div>`).join("");
   }
 
-  // Etkilenenler
-  if (data.etkilenenler?.length) {
-    document.getElementById("etkilenenler-list").innerHTML = data.etkilenenler.map(e => `
-      <div class="etkilenen">
-        <h4>${e.baslik || "—"}</h4>
-        <p>${e.aciklama || ""}</p>
-      </div>`).join("");
-  }
-
   // Senaryolar
   if (data.senaryolar?.length) {
     document.getElementById("senaryolar-list").innerHTML = data.senaryolar.map(s => `
@@ -379,8 +380,9 @@ function renderContent(data) {
 function renderDestekciCard(d) {
   const modalityClass = d.modality || "reported";
   const modalityLabel = d.modality_label || d.modality || "";
+  const dynamicClass = d.is_static === false ? "dynamic" : "";
   return `
-    <div class="destekci">
+    <div class="destekci ${dynamicClass}">
       <div class="destekci-header">
         <span class="destekci-ulke">${d.ulke || "—"}</span>
         <span class="destekci-tip">${d.destek || ""}</span>
@@ -423,19 +425,32 @@ function renderTaraflar(data) {
   }
 }
 
-fetch(`${WORKER}/rusya-ukrayna-taraflar`)
-  .then(r => r.json())
-  .then(data => {
-    if (data.error) throw new Error(data.error);
-    renderTaraflar(data);
-  })
-  .catch(err => {
-    ["rusya-taraf-list", "ukrayna-taraf-list"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = `<div class="destekci"><p class="loading">Grafik verisi yüklenemedi.</p></div>`;
+// Destekçi verisi KV'ye yazılsın, ardından taraflar birleşik yüklensin
+const DESTEKCI_CACHE_KEY = "ru-destekci-date";
+function loadTaraflar() {
+  fetch(`${WORKER}/rusya-ukrayna-taraflar`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      renderTaraflar(data);
+    })
+    .catch(err => {
+      ["rusya-taraf-list", "ukrayna-taraf-list"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<div class="destekci"><p class="loading">Grafik verisi yüklenemedi.</p></div>`;
+      });
+      console.error("Taraflar grafik hatası:", err);
     });
-    console.error("Taraflar grafik hatası:", err);
-  });
+}
+if (localStorage.getItem(DESTEKCI_CACHE_KEY) === today) {
+  loadTaraflar();
+} else {
+  fetch(`${WORKER}/rusya-ukrayna-destekci-guncelle`)
+    .then(r => r.json())
+    .then(() => { localStorage.setItem(DESTEKCI_CACHE_KEY, today); })
+    .catch(() => {})
+    .finally(() => loadTaraflar());
+}
 
 // LocalStorage cache kontrolü
 const cachedContent = localStorage.getItem(CACHE_KEY);
@@ -468,6 +483,16 @@ const ENTITY_NAMES = {
   "country:ukraine":              "Ukrayna",
   "country:usa":                  "ABD",
   "org:nato":                     "NATO",
+  "country:china":                "Çin Halk Cumhuriyeti",
+  "country:belarus":              "Belarus",
+  "org:eu":                       "Avrupa Birliği",
+  "country:poland":               "Polonya",
+  "country:uk":                   "Birleşik Krallık",
+  "country:germany":              "Almanya",
+  "sector:avrupa-enerji":         "Avrupa Enerji Piyasaları",
+  "sector:kuresel-tahil":         "Küresel Tahıl Piyasaları",
+  "sector:ukrayna-sivil":         "Ukrayna Sivil Halkı",
+  "sector:global-savunma":        "Küresel Savunma Sektörü",
   "event:tam-saldiri-2022-02-24": "Tam Ölçekli Saldırı (2022)",
   "resource:dogalgaz-rus":        "Rus Doğal Gazı",
   "place:donbas":                 "Donbas",
@@ -565,6 +590,61 @@ if (cachedKenar && cachedKenarDate === today) {
       console.error("Kenar yükleme hatası:", err);
     });
 }
+
+// --- ETKİLENENLER (grafik tabanlı) ---
+function etkilenmeCardHTML(e) {
+  const src  = ENTITY_NAMES[e.source_id] || e.source_id;
+  const tgt  = ENTITY_NAMES[e.target_id] || e.target_id;
+  const mod  = MODALITY_TR[e.modality] || e.modality;
+  const prov = e.provenance?.[0] || (e.attributes?.source_url ? { domain: new URL(e.attributes.source_url).hostname, published: e.attributes.date } : null);
+  const srcInfo = prov ? `${prov.domain || ""}${prov.published ? " · " + prov.published : ""}` : "";
+  const excerpt = e.attributes?.excerpt || e.attributes?.impact_summary || "";
+  return `
+    <div class="etkilenme-card">
+      <div class="etkilenme-path">
+        <span class="kenar-entity">${src}</span>
+        <span class="kenar-arrow" style="font-size:11px;color:#555"> etkiliyor </span>
+        <span class="etkilenme-target">${tgt}</span>
+      </div>
+      ${excerpt ? `<div class="etkilenme-ozet">${excerpt.slice(0, 150)}</div>` : ""}
+      <div class="etkilenme-meta">
+        <span class="modality-badge ${e.modality || "reported"}">${mod}</span>
+        ${srcInfo ? `<span class="kenar-source">${srcInfo}</span>` : ""}
+      </div>
+    </div>`;
+}
+
+const ETKILENME_CACHE_KEY = "ru-etkilenme";
+const ETKILENME_CACHE_DATE_KEY = "ru-etkilenme-date";
+
+(function loadEtkilenme() {
+  const cached = localStorage.getItem(ETKILENME_CACHE_KEY);
+  const cachedDate = localStorage.getItem(ETKILENME_CACHE_DATE_KEY);
+  function renderEtkilenenler(edges) {
+    const el = document.getElementById("etkilenenler-list");
+    if (!el) return;
+    el.innerHTML = edges.length
+      ? edges.map(etkilenmeCardHTML).join("")
+      : `<div class="etkilenme-card"><p style="color:#555;font-style:italic">Etkilenme verisi bulunamadı.</p></div>`;
+  }
+  if (cached && cachedDate === today) {
+    renderEtkilenenler(JSON.parse(cached));
+  } else {
+    fetch(`${WORKER}/rusya-ukrayna-etkilenme-guncelle`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        const edges = data.extracted_edges || [];
+        renderEtkilenenler(edges);
+        localStorage.setItem(ETKILENME_CACHE_KEY, JSON.stringify(edges));
+        localStorage.setItem(ETKILENME_CACHE_DATE_KEY, today);
+      })
+      .catch(() => {
+        const el = document.getElementById("etkilenenler-list");
+        if (el) el.innerHTML = `<div class="etkilenme-card"><p style="color:#555">Veri yüklenemedi.</p></div>`;
+      });
+  }
+})();
 
 // Aktif sidebar bölümü vurgula
 const sections = document.querySelectorAll(".section");

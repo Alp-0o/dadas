@@ -41,6 +41,7 @@
     "valid_from": "2022-02-24",
     "valid_to": null,
     "modality": "reported",
+    "show_in_flow": false,
     "provenance": [
       {
         "source_id": "src:ap-2022-02-24-invasion",
@@ -128,6 +129,7 @@
     "valid_from": "2022-02-24",
     "valid_to": null,
     "modality": "reported",
+    "show_in_flow": false,
     "provenance": [
       {
         "source_id": "src:reuters-2022-04-13-aid",
