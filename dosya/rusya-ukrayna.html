@@ -102,6 +102,24 @@ header span { font-size: 12px; color: #666; }
 .sorular-list li::before { content: "?"; color: #4a3a8a; font-weight: 700; margin-right: 10px; }
 
 .footer-meta { margin-top: 48px; padding-top: 16px; border-top: 1px solid #1e1e2e; font-size: 11px; color: #333; }
+
+/* --- KEŞFEDİLEN BAĞLANTILAR --- */
+.section-pipeline-badge { font-size: 9px; color: #1a6a3a; background: #001a0d; border: 1px solid #004a20; border-radius: 3px; padding: 2px 6px; margin-left: auto; }
+.kenar-list { display: flex; flex-direction: column; gap: 8px; }
+.kenar-card { background: #0f0f1a; border: 1px solid #1e1e2e; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #1e1e2e; }
+.kenar-card.polarity-oppose  { border-left-color: #5a2a2a; }
+.kenar-card.polarity-support { border-left-color: #1a4a2a; }
+.kenar-card.polarity-neutral { border-left-color: #2a2a4a; }
+.kenar-path { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.kenar-entity { font-size: 13px; font-weight: 600; color: #ccc; }
+.kenar-arrow { font-size: 11px; color: #444; white-space: nowrap; }
+.kenar-type { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #7a6aaa; background: #111130; border-radius: 3px; padding: 2px 7px; }
+.kenar-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.kenar-source { font-size: 11px; color: #444; }
+.kenar-excerpt { font-size: 12px; color: #555; font-style: italic; border-left: 2px solid #1e1e2e; padding-left: 8px; line-height: 1.5; }
+.kenar-empty { font-size: 13px; color: #444; font-style: italic; }
+.baglanti-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.baglanti-meta-item { font-size: 11px; color: #444; }
 </style>
 </head>
 <body>
@@ -144,6 +162,7 @@ header span { font-size: 12px; color: #666; }
       <a href="#destekcilder"><span class="num">07</span>Destekçiler</a>
       <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">AI</span></a>
       <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları<span class="ai-tag">AI</span></a>
+      <a href="#baglantılar"><span class="num">11</span>Keşfedilen Bağlantılar<span class="ai-tag">Grafik</span></a>
       <a href="#sorular"><span class="num">10</span>Açık Sorular</a>
     </nav>
   </aside>
@@ -243,6 +262,22 @@ header span { font-size: 12px; color: #666; }
       </div>
       <div class="senaryo-list" id="senaryolar-list">
         <div class="senaryo"><p class="loading">Yükleniyor...</p></div>
+      </div>
+    </div>
+
+    <!-- 11. KEŞFEDİLEN BAĞLANTILAR — Pipeline -->
+    <div class="section" id="baglantılar">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <span class="section-title">Keşfedilen Bağlantılar</span>
+        <span class="section-pipeline-badge">AI · Grafik · Günlük</span>
+      </div>
+      <div class="baglanti-meta">
+        <span class="baglanti-meta-item" id="baglanti-tarih">—</span>
+        <span class="baglanti-meta-item" id="baglanti-kaynak-sayi">—</span>
+      </div>
+      <div class="kenar-list" id="kenar-list">
+        <div class="kenar-card"><p class="loading">Yükleniyor...</p></div>
       </div>
     </div>
 
@@ -410,6 +445,106 @@ if (cachedContent && cachedDate === today) {
         if (el) { el.textContent = "İçerik yüklenemedi."; el.classList.remove("loading"); }
       });
       console.error("İçerik yükleme hatası:", err);
+    });
+}
+
+// --- KEŞFEDİLEN BAĞLANTILAR ---
+
+const ENTITY_NAMES = {
+  "country:russia":               "Rusya Federasyonu",
+  "country:ukraine":              "Ukrayna",
+  "country:usa":                  "ABD",
+  "org:nato":                     "NATO",
+  "event:tam-saldiri-2022-02-24": "Tam Ölçekli Saldırı (2022)",
+  "resource:dogalgaz-rus":        "Rus Doğal Gazı",
+  "place:donbas":                 "Donbas",
+};
+
+const TYPE_TR = {
+  commands:   "komuta ediyor",
+  supports:   "destekliyor",
+  opposes:    "karşı çıkıyor",
+  attacks:    "saldırıyor",
+  defends:    "savunuyor",
+  controls:   "kontrol ediyor",
+  located_in: "konumlu",
+  affects:    "etkiliyor",
+  sanctions:  "yaptırım uyguluyor",
+  negotiates: "müzakere yürütüyor",
+  supplies:   "tedarik ediyor",
+  funded_by:  "finanse ediliyor",
+  mediates:   "arabuluculuk yapıyor",
+};
+
+const MODALITY_TR = {
+  verified: "doğrulanmış",
+  reported: "haberlenmiş",
+  inferred: "çıkarım",
+  claimed:  "iddia",
+};
+
+function renderKenarlar(data) {
+  const edges = data.extracted_edges || [];
+  const listEl = document.getElementById("kenar-list");
+
+  document.getElementById("baglanti-tarih").textContent = `Tarih: ${data.date || "—"}`;
+  document.getElementById("baglanti-kaynak-sayi").textContent =
+    `${data.source_article_count || 0} haberden · ${edges.length} bağlantı`;
+
+  if (!edges.length) {
+    listEl.innerHTML = `<p class="kenar-empty">Bugün çıkarılmış bağlantı bulunamadı.</p>`;
+    return;
+  }
+
+  listEl.innerHTML = edges.map(e => {
+    const src  = ENTITY_NAMES[e.source_id] || e.source_id;
+    const tgt  = ENTITY_NAMES[e.target_id] || e.target_id;
+    const type = TYPE_TR[e.type] || e.type;
+    const mod  = MODALITY_TR[e.modality] || e.modality;
+    const prov = e.provenance?.[0];
+    const srcInfo = prov ? `${prov.domain} · ${prov.published}` : "";
+    const excerpt = e.attributes?.excerpt || "";
+    const polClass = `polarity-${e.polarity || "neutral"}`;
+
+    return `
+      <div class="kenar-card ${polClass}">
+        <div class="kenar-path">
+          <span class="kenar-entity">${src}</span>
+          <span class="kenar-arrow">──▶</span>
+          <span class="kenar-type">${type}</span>
+          <span class="kenar-arrow">──▶</span>
+          <span class="kenar-entity">${tgt}</span>
+        </div>
+        <div class="kenar-meta">
+          <span class="modality-badge ${e.modality || "reported"}">${mod}</span>
+          ${srcInfo ? `<span class="kenar-source">${srcInfo}</span>` : ""}
+        </div>
+        ${excerpt ? `<div class="kenar-excerpt">"${excerpt}"</div>` : ""}
+      </div>`;
+  }).join("");
+}
+
+const KENAR_CACHE_KEY = "ru-kenar";
+const KENAR_CACHE_DATE_KEY = "ru-kenar-date";
+
+const cachedKenar = localStorage.getItem(KENAR_CACHE_KEY);
+const cachedKenarDate = localStorage.getItem(KENAR_CACHE_DATE_KEY);
+
+if (cachedKenar && cachedKenarDate === today) {
+  renderKenarlar(JSON.parse(cachedKenar));
+} else {
+  fetch(`${WORKER}/rusya-ukrayna-kenar-cikart`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+      renderKenarlar(data);
+      localStorage.setItem(KENAR_CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(KENAR_CACHE_DATE_KEY, today);
+    })
+    .catch(err => {
+      document.getElementById("kenar-list").innerHTML =
+        `<p class="kenar-empty">Bağlantılar yüklenemedi.</p>`;
+      console.error("Kenar yükleme hatası:", err);
     });
 }
 
