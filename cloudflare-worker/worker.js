@@ -476,6 +476,30 @@ async function handleKenarCikart(env) {
   return jsonResponse({ ...output, cached: false });
 }
 
+async function handleKenarlar(env) {
+  const entityMap = Object.fromEntries(RU_ENTITIES.map(e => [e.id, e]));
+  const MODALITY_TR = { verified: "doğrulanmış", reported: "haberlenmiş", inferred: "çıkarım", claimed: "iddia" };
+
+  const temel = RU_EDGES.map(e => ({
+    source_id: e.source_id,
+    source_name: entityMap[e.source_id]?.canonical_name || e.source_id,
+    target_id: e.target_id,
+    target_name: entityMap[e.target_id]?.canonical_name || e.target_id,
+    type: e.type,
+    polarity: e.polarity,
+    modality: e.modality,
+    modality_label: MODALITY_TR[e.modality] || e.modality,
+    valid_from: e.valid_from,
+    attributes: e.attributes,
+  }));
+
+  const today = new Date().toISOString().slice(0, 10);
+  const cached = await kvGet(env, `kenar-cikart-${today}`);
+  const guncel = cached ? (JSON.parse(cached).extracted_edges || []) : [];
+
+  return jsonResponse({ temel_baglamlar: temel, guncel_baglantılar: guncel, date: today });
+}
+
 async function appendKenarLog(env, entry) {
   if (!env.RASAD_CACHE) return;
   const raw = await env.RASAD_CACHE.get("kenar-log");
@@ -525,6 +549,7 @@ export default {
       if (path === "/rusya-ukrayna-content") return await handleRusyaUkraynaContent(env);
       if (path === "/rusya-ukrayna-taraflar") return handleRusyaUkraynaTaraflar();
       if (path === "/rusya-ukrayna-kenar-cikart") return await handleKenarCikart(env);
+      if (path === "/rusya-ukrayna-kenarlar") return await handleKenarlar(env);
       if (path === "/kenar-log") return await handleKenarLog(env);
       return jsonResponse({ error: "Geçersiz endpoint." }, 404);
     } catch (err) {

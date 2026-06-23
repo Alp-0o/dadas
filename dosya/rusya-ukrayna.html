@@ -120,6 +120,12 @@ header span { font-size: 12px; color: #666; }
 .kenar-empty { font-size: 13px; color: #444; font-style: italic; }
 .baglanti-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .baglanti-meta-item { font-size: 11px; color: #444; }
+.kenar-category-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+.kenar-category-label.kenar-category-guncel { color: #7a6aaa; }
+.kenar-category-desc { font-size: 11px; color: #333; margin-bottom: 12px; }
+.kenar-card.kenar-static { opacity: 0.55; border-left-color: #2a2a3a !important; }
+.kenar-card.kenar-static .kenar-entity { color: #888; }
+.kenar-card.kenar-static .kenar-type { color: #555; background: #0f0f1a; }
 </style>
 </head>
 <body>
@@ -162,8 +168,8 @@ header span { font-size: 12px; color: #666; }
       <a href="#destekcilder"><span class="num">07</span>Destekçiler</a>
       <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">AI</span></a>
       <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları<span class="ai-tag">AI</span></a>
-      <a href="#baglantılar"><span class="num">11</span>Keşfedilen Bağlantılar<span class="ai-tag">Grafik</span></a>
-      <a href="#sorular"><span class="num">10</span>Açık Sorular</a>
+      <a href="#baglantılar"><span class="num">10</span>Keşfedilen Bağlantılar<span class="ai-tag">Grafik</span></a>
+      <a href="#sorular"><span class="num">11</span>Açık Sorular</a>
     </nav>
   </aside>
 
@@ -265,26 +271,33 @@ header span { font-size: 12px; color: #666; }
       </div>
     </div>
 
-    <!-- 11. KEŞFEDİLEN BAĞLANTILAR — Pipeline -->
+    <!-- 10. KEŞFEDİLEN BAĞLANTILAR — Pipeline -->
     <div class="section" id="baglantılar">
       <div class="section-header">
-        <span class="section-num">11</span>
+        <span class="section-num">10</span>
         <span class="section-title">Keşfedilen Bağlantılar</span>
         <span class="section-pipeline-badge">AI · Grafik · Günlük</span>
       </div>
-      <div class="baglanti-meta">
+      <div class="kenar-category-label">Temel Bağlam</div>
+      <div class="kenar-category-desc">Graftan doğrudan okunan, bilinen yapısal ilişkiler.</div>
+      <div class="kenar-list" id="temel-kenar-list">
+        <div class="kenar-card kenar-static"><p class="loading">Yükleniyor...</p></div>
+      </div>
+
+      <div class="kenar-category-label kenar-category-guncel" style="margin-top:24px">Güncel Bağlantılar</div>
+      <div class="baglanti-meta" style="margin-bottom:10px">
         <span class="baglanti-meta-item" id="baglanti-tarih">—</span>
         <span class="baglanti-meta-item" id="baglanti-kaynak-sayi">—</span>
       </div>
-      <div class="kenar-list" id="kenar-list">
+      <div class="kenar-list" id="guncel-kenar-list">
         <div class="kenar-card"><p class="loading">Yükleniyor...</p></div>
       </div>
     </div>
 
-    <!-- 10. AÇIK SORULAR — Manuel -->
+    <!-- 11. AÇIK SORULAR — Manuel -->
     <div class="section" id="sorular">
       <div class="section-header">
-        <span class="section-num">10</span>
+        <span class="section-num">11</span>
         <span class="section-title">Açık Sorular / Takip Edilmesi Gerekenler</span>
       </div>
       <ul class="sorular-list">
@@ -483,49 +496,53 @@ const MODALITY_TR = {
   claimed:  "iddia",
 };
 
+function kenarCardHTML(e, isStatic) {
+  const src  = e.source_name || ENTITY_NAMES[e.source_id] || e.source_id;
+  const tgt  = e.target_name || ENTITY_NAMES[e.target_id] || e.target_id;
+  const type = TYPE_TR[e.type] || e.type;
+  const mod  = e.modality_label || MODALITY_TR[e.modality] || e.modality;
+  const prov = e.provenance?.[0];
+  const srcInfo = prov ? `${prov.domain} · ${prov.published}` : "";
+  const excerpt = e.attributes?.excerpt || e.attributes?.rasad_reasoning || "";
+  const polClass = `polarity-${e.polarity || "neutral"}`;
+  const staticClass = isStatic ? "kenar-static" : "";
+
+  return `
+    <div class="kenar-card ${polClass} ${staticClass}">
+      <div class="kenar-path">
+        <span class="kenar-entity">${src}</span>
+        <span class="kenar-arrow">──▶</span>
+        <span class="kenar-type">${type}</span>
+        <span class="kenar-arrow">──▶</span>
+        <span class="kenar-entity">${tgt}</span>
+      </div>
+      <div class="kenar-meta">
+        <span class="modality-badge ${e.modality || "reported"}">${mod}</span>
+        ${srcInfo ? `<span class="kenar-source">${srcInfo}</span>` : ""}
+      </div>
+      ${excerpt ? `<div class="kenar-excerpt">"${excerpt.slice(0, 120)}"</div>` : ""}
+    </div>`;
+}
+
 function renderKenarlar(data) {
-  const edges = data.extracted_edges || [];
-  const listEl = document.getElementById("kenar-list");
+  const temel  = data.temel_baglamlar || [];
+  const guncel = data.guncel_baglantılar || [];
+
+  document.getElementById("temel-kenar-list").innerHTML = temel.length
+    ? temel.map(e => kenarCardHTML(e, true)).join("")
+    : `<p class="kenar-empty">Temel bağlam verisi yüklenemedi.</p>`;
 
   document.getElementById("baglanti-tarih").textContent = `Tarih: ${data.date || "—"}`;
   document.getElementById("baglanti-kaynak-sayi").textContent =
-    `${data.source_article_count || 0} haberden · ${edges.length} bağlantı`;
+    guncel.length ? `${guncel.length} bağlantı bulundu` : "";
 
-  if (!edges.length) {
-    listEl.innerHTML = `<p class="kenar-empty">Bugün çıkarılmış bağlantı bulunamadı.</p>`;
-    return;
-  }
-
-  listEl.innerHTML = edges.map(e => {
-    const src  = ENTITY_NAMES[e.source_id] || e.source_id;
-    const tgt  = ENTITY_NAMES[e.target_id] || e.target_id;
-    const type = TYPE_TR[e.type] || e.type;
-    const mod  = MODALITY_TR[e.modality] || e.modality;
-    const prov = e.provenance?.[0];
-    const srcInfo = prov ? `${prov.domain} · ${prov.published}` : "";
-    const excerpt = e.attributes?.excerpt || "";
-    const polClass = `polarity-${e.polarity || "neutral"}`;
-
-    return `
-      <div class="kenar-card ${polClass}">
-        <div class="kenar-path">
-          <span class="kenar-entity">${src}</span>
-          <span class="kenar-arrow">──▶</span>
-          <span class="kenar-type">${type}</span>
-          <span class="kenar-arrow">──▶</span>
-          <span class="kenar-entity">${tgt}</span>
-        </div>
-        <div class="kenar-meta">
-          <span class="modality-badge ${e.modality || "reported"}">${mod}</span>
-          ${srcInfo ? `<span class="kenar-source">${srcInfo}</span>` : ""}
-        </div>
-        ${excerpt ? `<div class="kenar-excerpt">"${excerpt}"</div>` : ""}
-      </div>`;
-  }).join("");
+  document.getElementById("guncel-kenar-list").innerHTML = guncel.length
+    ? guncel.map(e => kenarCardHTML(e, false)).join("")
+    : `<p class="kenar-empty">Bugün henüz bağlantı çıkarılmamış — sayfa yüklenirken işleniyor olabilir.</p>`;
 }
 
-const KENAR_CACHE_KEY = "ru-kenar";
-const KENAR_CACHE_DATE_KEY = "ru-kenar-date";
+const KENAR_CACHE_KEY = "ru-kenarlar";
+const KENAR_CACHE_DATE_KEY = "ru-kenarlar-date";
 
 const cachedKenar = localStorage.getItem(KENAR_CACHE_KEY);
 const cachedKenarDate = localStorage.getItem(KENAR_CACHE_DATE_KEY);
@@ -533,7 +550,7 @@ const cachedKenarDate = localStorage.getItem(KENAR_CACHE_DATE_KEY);
 if (cachedKenar && cachedKenarDate === today) {
   renderKenarlar(JSON.parse(cachedKenar));
 } else {
-  fetch(`${WORKER}/rusya-ukrayna-kenar-cikart`)
+  fetch(`${WORKER}/rusya-ukrayna-kenarlar`)
     .then(r => r.json())
     .then(data => {
       if (data.error) throw new Error(data.error);
@@ -542,8 +559,9 @@ if (cachedKenar && cachedKenarDate === today) {
       localStorage.setItem(KENAR_CACHE_DATE_KEY, today);
     })
     .catch(err => {
-      document.getElementById("kenar-list").innerHTML =
-        `<p class="kenar-empty">Bağlantılar yüklenemedi.</p>`;
+      ["temel-kenar-list", "guncel-kenar-list"].forEach(id => {
+        document.getElementById(id).innerHTML = `<p class="kenar-empty">Bağlantılar yüklenemedi.</p>`;
+      });
       console.error("Kenar yükleme hatası:", err);
     });
 }
