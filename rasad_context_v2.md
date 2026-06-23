@@ -70,6 +70,7 @@ rasad/
   - `temel_baglamlar`: RU_EDGES'den `show_in_flow !== false` olanlar
   - `guncel_baglantılar`: KV'den alınan dinamik kenarlar, **statik RU_EDGES ile çakışanlar çıkarılır** (show_in_flow: false dahil)
   - Bu sayede LLM aynı "bariz" kenarı yeniden üretse bile güncel listede görünmez
+- **Bilinen sınır:** Dedup, `(source_id, target_id, type)` üçlüsüne göre çalışır. Aynı olayı anlatan farklı type'lar (örn. `org:nato opposes country:russia` vs `org:nato supports country:ukraine`) ayrı kenar sayılır ve ikisi birden görünebilir. Çözüm için içerik/anlam benzerliğine göre dedup gerekir — henüz implement edilmedi.
 
 ### Edge Extraction (Adım 3 — tamamlandı 2026-06-23)
 - Kapalı entity uzayı: LLM sadece `RU_ENTITIES` ID'lerini kullanabilir; bilinmeyenleri `unresolved_entities[]`'e atar
