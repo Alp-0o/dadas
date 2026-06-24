@@ -414,6 +414,7 @@ ${entityList}
 8. excerpt: bu ilişkiyi destekleyen haber cümlesinden kısa alıntı.
 9. SOMUT EYLEM KURALI: Kenar ancak somut bir eylemi, kararı veya durumu kanıtlıyorsa üretilebilir (saldırı, yardım paketi, yaptırım, anlaşma, kontrol, tedarik vb.). Siyasi söylem, yorum veya retorik alıntılar ("X dedi ki...", "Y'ye göre...", "Z'nin iddiasına göre...") somut eylemin kendisi değildir — bu tür cümlelere dayanan kenar üretme.
 10. TEKİL İLİŞKİ KURALI: Aynı source_id + target_id + type kombinasyonunu birden fazla kez üretme.
+11. YÖN KURALI: supports / funded_by / supplies / defends gibi yönlü ilişkilerde source_id DESTEKLEYEN, target_id DESTEKLENEN taraftır. Örnek: ABD Ukrayna'yı destekliyorsa source_id=country:usa, target_id=country:ukraine. Bunun tersini asla üretme. opposes / sanctions / attacks ilişkilerinde source_id EYLEMI YAPAN, target_id EYLEMDEN ETKİLENEN taraftır.
 
 HABERLER:
 ${newsText}
@@ -531,6 +532,7 @@ KISITLAR:
 3. Aynı source+target+type kombinasyonunu tekrarlama.
 4. Haberde açıkça geçmeyen ilişki üretme.
 5. Listede olmayan entity'leri unresolved_entities'e ekle.
+6. YÖN KURALI: supports / funded_by / supplies gibi yönlü ilişkilerde source_id DESTEKLEYEN, target_id DESTEKLENEN taraftır. Örnek: ABD Ukrayna'yı destekliyorsa source_id=country:usa, target_id=country:ukraine. Bunun tersini asla üretme. opposes / sanctions ilişkilerinde source_id EYLEMI YAPAN, target_id EYLEMDEN ETKİLENEN taraftır.
 
 HABERLER:
 ${newsText}
