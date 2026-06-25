@@ -258,5 +258,114 @@
     },
     "created_at": "2026-06-25T00:00:00Z",
     "updated_at": "2026-06-25T00:00:00Z"
+  },
+  {
+    "id": "edge:00010",
+    "schema_version": "1.0",
+    "source_id": "country:poland",
+    "target_id": "country:ukraine",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:nato-2025-11-23-poland-hub",
+        "domain": "nato.int",
+        "published": "2025-11-23",
+        "source_type": "resmi kaynak",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "lojistik transit koridoru — silah ve insani yardım nakliyesi",
+      "note": "NSATU lojistik merkezi (Rzeszow): aylık ~18.000 ton; 2025 genelinde ~220.000 ton transit"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
+  },
+  {
+    "id": "edge:00011",
+    "schema_version": "1.0",
+    "source_id": "country:germany",
+    "target_id": "country:ukraine",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-04-01",
+    "valid_to": null,
+    "modality": "verified",
+    "provenance": [
+      {
+        "source_id": "src:defensepost-2025-01-03-germany-leopard",
+        "domain": "thedefensepost.com",
+        "published": "2025-01-03",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:kyivind-2025-01-03-germany-package",
+        "domain": "kyivindependent.com",
+        "published": "2025-01-03",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:pbs-2025-10-germany-pledge",
+        "domain": "pbs.org",
+        "published": "2025-10-01",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "Leopard 1A5 tank, IRIS-T hava savunma, Patriot fırlatıcıları, mühimmat",
+      "note": "Toplam €28 milyar taahhüt; Avrupa'nın en büyük ikili donörü (2025-2026)"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
+  },
+  {
+    "id": "edge:00012",
+    "schema_version": "1.0",
+    "source_id": "country:uk",
+    "target_id": "country:ukraine",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2023-01-01",
+    "valid_to": null,
+    "modality": "verified",
+    "provenance": [
+      {
+        "source_id": "src:armyrec-2025-11-03-uk-stormshadow",
+        "domain": "armyrecognition.com",
+        "published": "2025-11-03",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:kyivpost-2025-uk-stormshadow",
+        "domain": "kyivpost.com",
+        "published": "2025-01-01",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:armytech-uk-gifts",
+        "domain": "army-technology.com",
+        "published": "2023-01-01",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "Challenger 2 tank (14 adet), Storm Shadow seyir füzesi",
+      "note": "Storm Shadow MBDA üretimi Temmuz 2025'te yeniden başlatıldı; Kasım 2025'te kış kampanyası için ek teslimat"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
   }
 ]
