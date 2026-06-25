@@ -229,6 +229,32 @@
     "confidence": "resolved"
   },
   {
+    "id": "country:iran",
+    "schema_version": "1.0",
+    "type": "country",
+    "canonical_name": "İran İslam Cumhuriyeti",
+    "aliases": ["İran", "Iran", "IRI", "ایران", "Persia"],
+    "sector_tags": ["jeopolitik", "askeri", "savunma sanayi"],
+    "attributes": { "iso2": "IR", "capital": "Tahran" },
+    "first_seen": "2022-08-01",
+    "last_seen": "2026-06-25",
+    "source_refs": [],
+    "confidence": "resolved"
+  },
+  {
+    "id": "country:north-korea",
+    "schema_version": "1.0",
+    "type": "country",
+    "canonical_name": "Kuzey Kore",
+    "aliases": ["North Korea", "DPRK", "조선민주주의인민공화국", "Kuzey Kore Demokratik Halk Cumhuriyeti"],
+    "sector_tags": ["jeopolitik", "askeri", "savunma sanayi"],
+    "attributes": { "iso2": "KP", "capital": "Pyongyang" },
+    "first_seen": "2024-01-01",
+    "last_seen": "2026-06-25",
+    "source_refs": [],
+    "confidence": "resolved"
+  },
+  {
     "id": "place:donbas",
     "schema_version": "1.0",
     "type": "place",

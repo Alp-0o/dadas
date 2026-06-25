@@ -163,5 +163,100 @@
     },
     "created_at": "2026-06-22T10:00:00Z",
     "updated_at": "2026-06-22T10:00:00Z"
+  },
+  {
+    "id": "edge:00007",
+    "schema_version": "1.0",
+    "source_id": "country:china",
+    "target_id": "country:russia",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-02-24",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:cnbc-2026-05-21-putin-xi",
+        "domain": "cnbc.com",
+        "published": "2026-05-21",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "enerji (petrol, doğalgaz, LNG) + ekonomik ticaret",
+      "note": "2025 ikili ticaret ~228 milyar dolar; Power of Siberia 1 tam kapasitede; Q1 2026 petrol ihracatı %35 arttı"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
+  },
+  {
+    "id": "edge:00008",
+    "schema_version": "1.0",
+    "source_id": "country:iran",
+    "target_id": "country:russia",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2022-08-01",
+    "valid_to": null,
+    "modality": "reported",
+    "provenance": [
+      {
+        "source_id": "src:wapo-2025-05-29-iran-drone",
+        "domain": "washingtonpost.com",
+        "published": "2025-05-29",
+        "source_type": "batı medyası",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "Shahed serisi drone, drone teknoloji transferi",
+      "note": "Alabuga tesisinde Rusya ayda ~2700 Shahed üretiyor; 2026 hedefi günde 1000 Geran-2"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
+  },
+  {
+    "id": "edge:00009",
+    "schema_version": "1.0",
+    "source_id": "country:north-korea",
+    "target_id": "country:russia",
+    "type": "supplies",
+    "directed": true,
+    "polarity": "support",
+    "valid_from": "2024-01-01",
+    "valid_to": null,
+    "modality": "verified",
+    "provenance": [
+      {
+        "source_id": "src:euromaidanpress-2025-04-15-nk-ammo",
+        "domain": "euromaidanpress.com",
+        "published": "2025-04-15",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:defensepost-2026-03-02-nk-shipments",
+        "domain": "thedefensepost.com",
+        "published": "2026-03-02",
+        "source_type": "batı medyası",
+        "language": "en"
+      },
+      {
+        "source_id": "src:aa-2026-04-26-nk-museum",
+        "domain": "aa.com.tr",
+        "published": "2026-04-26",
+        "source_type": "uluslararası haber ajansı",
+        "language": "en"
+      }
+    ],
+    "attributes": {
+      "supply_type": "topçu mühimmatı (15 milyon+ mermi), 15.000+ asker, KN-23/24 balistik füze",
+      "note": "Reuters: Rusya topçu mermilerinin %50-100'ü Kuzey Kore'den; 2026 itibarıyla 33.000 konteyner askeri malzeme teslim edildi"
+    },
+    "created_at": "2026-06-25T00:00:00Z",
+    "updated_at": "2026-06-25T00:00:00Z"
   }
 ]

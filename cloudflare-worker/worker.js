@@ -343,8 +343,9 @@ async function handleRusyaUkraynaTaraflar(env) {
   }
 
   // Statik destekçiler (RU_EDGES'den)
-  const staticRusya   = RU_EDGES.filter(e => e.type === "supports" && e.target_id === "country:russia"  && e.polarity === "support");
-  const staticUkrayna = RU_EDGES.filter(e => e.type === "supports" && e.target_id === "country:ukraine" && e.polarity === "support");
+  const STATIC_SUPPORTER_TYPES = new Set(["supports", "supplies", "funded_by", "defends"]);
+  const staticRusya   = RU_EDGES.filter(e => STATIC_SUPPORTER_TYPES.has(e.type) && e.target_id === "country:russia"  && e.polarity === "support");
+  const staticUkrayna = RU_EDGES.filter(e => STATIC_SUPPORTER_TYPES.has(e.type) && e.target_id === "country:ukraine" && e.polarity === "support");
 
   // Dinamik destekçiler (KV cache'den)
   const today = new Date().toISOString().slice(0, 10);
