@@ -45,6 +45,69 @@ function tagSource(domain) {
 
 // --- GDELT HELPERS ---
 
+// Son tamamlanmış 15-dk bloğunun timestamp'i: "20260625203000"
+function gdeltGkgTimestamp(offsetBlocks = 1) {
+  const d = new Date(Date.now() - offsetBlocks * 15 * 60 * 1000);
+  d.setUTCMinutes(Math.floor(d.getUTCMinutes() / 15) * 15, 0, 0);
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}${p(d.getUTCMonth()+1)}${p(d.getUTCDate())}${p(d.getUTCHours())}${p(d.getUTCMinutes())}00`;
+}
+
+// GKG bulk ZIP — storage.googleapis.com (DOC API yerine; rate-limit yok)
+// Locations alanında ülke kodu filtresi: 1#Russia# veya 1#Ukraine#
+async function gdeltGkgFetch() {
+  for (let offset = 1; offset <= 4; offset++) {
+    try {
+      const ts  = gdeltGkgTimestamp(offset);
+      const url = `https://storage.googleapis.com/data.gdeltproject.org/gdeltv2/${ts}.gkg.csv.zip`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+
+      // ZIP → deflate-raw ile aç
+      const buf = new Uint8Array(await res.arrayBuffer());
+      // Local file header: offset 0 (GDELT dosyası tek entry içerir)
+      const compressedSize = buf[18] | (buf[19]<<8) | (buf[20]<<16) | (buf[21]<<24);
+      const fnLen          = buf[26] | (buf[27]<<8);
+      const exLen          = buf[28] | (buf[29]<<8);
+      const dataStart      = 30 + fnLen + exLen;
+      const compressed     = buf.slice(dataStart, dataStart + compressedSize);
+
+      const ds = new DecompressionStream('deflate-raw');
+      const w  = ds.writable.getWriter();
+      w.write(compressed);
+      w.close();
+      const csv = new TextDecoder().decode(await new Response(ds.readable).arrayBuffer());
+
+      // Filtre: GKG Locations (tab index 9) içinde ülke-düzeyi Russia/Ukraine
+      const RU_RE = /\b1#(?:Russia|Ukraine)#/i;
+      const articles = [];
+      for (const line of csv.split('\n')) {
+        if (!line.trim()) continue;
+        const f    = line.split('\t');
+        const locs = f[9] || '';
+        if (!RU_RE.test(locs)) continue;
+        const docUrl = f[4] || '';
+        if (!docUrl.startsWith('http')) continue;
+        const domain  = getDomain(docUrl);
+        const dateRaw = f[1] || '';
+        const tarih   = dateRaw.length >= 8 ? `${dateRaw.slice(0,4)}-${dateRaw.slice(4,6)}-${dateRaw.slice(6,8)}` : '';
+        const themes  = (f[7] || '').split(';').filter(Boolean).slice(0, 6).join('; ');
+        const orgs    = (f[13] || '').split(';').filter(Boolean).slice(0, 4).join(', ');
+        articles.push({
+          baslik:     themes || docUrl,
+          ozet:       orgs   || '',
+          kaynak:     domain,
+          kaynak_tipi: tagSourceGdelt(domain, ''),
+          tarih,
+        });
+        if (articles.length >= 60) break;
+      }
+      if (articles.length > 0) return articles;
+    } catch { continue; }
+  }
+  return null;
+}
+
 function parseGdeltDate(s) {
   const m = s && s.match(/^(\d{4})(\d{2})(\d{2})T/);
   return m ? `${m[1]}-${m[2]}-${m[3]}` : (s || "");
@@ -460,9 +523,9 @@ async function handleKenarCikart(env) {
   const cached = await kvGet(env, cacheKey);
   if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
 
-  // GDELT dene → 429/hata durumunda GNews'e düş
-  let articles = await gdeltFetch("Russia Ukraine war", 75);
-  let news_source = "gdelt";
+  // GDELT GKG bulk (storage.googleapis.com) dene → başarısız olursa GNews'e düş
+  let articles = await gdeltGkgFetch();
+  let news_source = "gdelt-gkg";
   if (!articles || !articles.length) {
     news_source = "gnews";
     articles = await gnewsFetch("Russia Ukraine war", 8, env);
