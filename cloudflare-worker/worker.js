@@ -282,8 +282,8 @@ async function handleRusyaUkraynaTaraflar(env) {
   const cached = await kvGet(env, `destekci-kenarlar-${today}`);
   const dynEdges = cached ? (JSON.parse(cached).extracted_edges || []) : [];
 
-  const dynRusya   = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by") && e.target_id === "country:russia");
-  const dynUkrayna = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by") && e.target_id === "country:ukraine");
+  const dynRusya   = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by" || e.type === "defends") && e.target_id === "country:russia");
+  const dynUkrayna = dynEdges.filter(e => (e.type === "supports" || e.type === "supplies" || e.type === "funded_by" || e.type === "defends") && e.target_id === "country:ukraine");
 
   // Karşı çıkanlar (opposes/sanctions russia = ukrayna tarafı, opposes ukraine = rusya tarafı)
   const dynRusyaOpposes   = dynEdges.filter(e => (e.type === "opposes" || e.type === "sanctions") && e.target_id === "country:ukraine");
@@ -463,7 +463,7 @@ KISITLAR:
 3. Aynı source+target+type kombinasyonunu tekrarlama.
 4. Haberde açıkça geçmeyen ilişki üretme.
 5. Listede olmayan entity'leri unresolved_entities'e ekle.
-6. YÖN KURALI: supports / funded_by / supplies gibi yönlü ilişkilerde source_id DESTEKLEYEN, target_id DESTEKLENEN taraftır. Örnek: ABD Ukrayna'yı destekliyorsa source_id=country:usa, target_id=country:ukraine. Bunun tersini asla üretme. opposes / sanctions ilişkilerinde source_id EYLEMI YAPAN, target_id EYLEMDEN ETKİLENEN taraftır.
+6. YÖN KURALI: supports / funded_by / supplies / defends gibi yönlü ilişkilerde source_id DESTEKLEYEN, target_id DESTEKLENEN taraftır. Örnek: ABD Ukrayna'yı destekliyorsa source_id=country:usa, target_id=country:ukraine. Bunun tersini asla üretme. opposes / sanctions ilişkilerinde source_id EYLEMI YAPAN, target_id EYLEMDEN ETKİLENEN taraftır.
 
 HABERLER:
 ${newsText}
