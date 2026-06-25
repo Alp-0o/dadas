@@ -43,6 +43,75 @@ function tagSource(domain) {
   return "diğer";
 }
 
+// --- GDELT HELPERS ---
+
+function parseGdeltDate(s) {
+  const m = s && s.match(/^(\d{4})(\d{2})(\d{2})T/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : (s || "");
+}
+
+// GDELT için domain + sourcecountry kombinasyonlu etiketleyici
+function tagSourceGdelt(domain, sourcecountry) {
+  const d = (domain || "").toLowerCase();
+  if (SRC_RUSSIA_STATE.some(x => d.includes(x))) return "rusya devlet medyası";
+  if (["themoscowtimes.com", "meduza.io", "novayagazeta.ru"].some(x => d.includes(x))) return "bağımsız";
+  if (SRC_UKRAINE.some(x => d.includes(x)) || d.endsWith(".ua") || sourcecountry === "Ukraine") return "ukrayna kaynağı";
+  if (SRC_WESTERN.some(x => d.includes(x))) return "batı medyası";
+  if (sourcecountry === "Russia") return "rusya kaynağı";
+  return "diğer";
+}
+
+// GDELT DOC API — makale listesi döner, 429/hata durumunda null döner (GNews fallback için)
+async function gdeltFetch(query, maxrecords = 75) {
+  const url = `https://api.gdeltproject.org/api/v2/doc/doc` +
+    `?query=${encodeURIComponent(query)}&mode=artlist&maxrecords=${maxrecords}` +
+    `&format=json&timespan=3d&sort=DateDesc`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const NOISE = [
+      "world cup", "visa", "pizza", "ethanol", "biodiesel", "celebrity",
+      "fashion", "sport", "football", "basketball", "tennis",
+    ];
+    const seenTitles = new Set();
+    return (data.articles || [])
+      .filter(a => {
+        if (!a.title) return false;
+        if (NOISE.some(k => a.title.toLowerCase().includes(k))) return false;
+        const key = a.title.trim().toLowerCase().slice(0, 60);
+        if (seenTitles.has(key)) return false;
+        seenTitles.add(key);
+        return true;
+      })
+      .map(a => ({
+        baslik: a.title,
+        ozet: "",
+        kaynak: a.domain || getDomain(a.url),
+        kaynak_tipi: tagSourceGdelt(a.domain, a.sourcecountry),
+        tarih: parseGdeltDate(a.seendate),
+      }));
+  } catch {
+    return null;
+  }
+}
+
+// GNews fallback — mevcut pattern, tekrar kullanılabilir hale getirildi
+async function gnewsFetch(query, max, env) {
+  const res = await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=${max}&apikey=${env.GNEWS_API_KEY}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const NOISE = ["world cup", "visa", "pizza", "ethanol", "biodiesel", "celebrity", "fashion", "sport"];
+  return (data.articles || [])
+    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
+    .map(a => {
+      const domain = getDomain(a.url);
+      const d = new Date(a.publishedAt);
+      const tarih = isNaN(d) ? a.publishedAt : d.toISOString().slice(0, 10);
+      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih };
+    });
+}
+
 // Kapalı ilişki sözlüğü — LLM sadece bu type değerlerini kullanabilir
 const RELATION_TYPES = [
   "commands", "supports", "opposes", "attacks", "defends",
@@ -390,24 +459,18 @@ async function handleKenarCikart(env) {
   const cached = await kvGet(env, cacheKey);
   if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
 
-  // GNews'ten haber çek
-  const res = await fetch(`https://gnews.io/api/v4/search?q=Russia Ukraine war&lang=en&max=8&apikey=${env.GNEWS_API_KEY}`);
-  if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
-  const newsData = await res.json();
+  // GDELT dene → 429/hata durumunda GNews'e düş
+  let articles = await gdeltFetch("Russia Ukraine war", 75);
+  let news_source = "gdelt";
+  if (!articles || !articles.length) {
+    news_source = "gnews";
+    articles = await gnewsFetch("Russia Ukraine war", 8, env);
+  }
+  if (!articles || !articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
 
-  const NOISE = ["world cup", "visa", "pizza", "ethanol", "biodiesel", "celebrity", "fashion"];
-  function fmtDate(iso) { try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; } }
-
-  const articles = newsData.articles
-    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
-    .map(a => {
-      const domain = getDomain(a.url);
-      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih: fmtDate(a.publishedAt) };
-    });
-
-  if (!articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
-
-  const prompt = buildEdgeExtractionPrompt(articles);
+  // LLM'e max 15 makale gönder
+  const limited = articles.slice(0, 15);
+  const prompt = buildEdgeExtractionPrompt(limited);
   const raw = await groqFetch(env, prompt, 2000, true);
 
   let result;
@@ -422,7 +485,8 @@ async function handleKenarCikart(env) {
   const errors = validateEdges(result.extracted_edges || []);
   const output = {
     date: today,
-    source_article_count: articles.length,
+    news_source,
+    source_article_count: limited.length,
     extracted_edges: result.extracted_edges || [],
     unresolved_entities: result.unresolved_entities || [],
     validation_errors: errors,
@@ -479,23 +543,16 @@ async function handleDestekciGuncelle(env) {
   const cached = await kvGet(env, cacheKey);
   if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
 
-  const query = "Russia Ukraine support alliance";
-  const res = await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=en&max=10&apikey=${env.GNEWS_API_KEY}`);
-  if (!res.ok) return jsonResponse({ error: `GNews hatası: ${res.status}` }, res.status);
-  const newsData = await res.json();
+  // GDELT dene → 429/hata durumunda GNews'e düş
+  let destekciArticles = await gdeltFetch("Russia Ukraine support", 75);
+  let destekci_news_source = "gdelt";
+  if (!destekciArticles || !destekciArticles.length) {
+    destekci_news_source = "gnews";
+    destekciArticles = await gnewsFetch("Russia Ukraine support alliance", 10, env);
+  }
+  if (!destekciArticles || !destekciArticles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
 
-  const NOISE = ["world cup", "visa", "pizza", "celebrity", "fashion", "sport"];
-  function fmtDate(iso) { try { return new Date(iso).toISOString().slice(0, 10); } catch { return iso; } }
-
-  const articles = newsData.articles
-    .filter(a => !NOISE.some(k => a.title.toLowerCase().includes(k)))
-    .map(a => {
-      const domain = getDomain(a.url);
-      return { baslik: a.title, ozet: a.description || "", kaynak: domain, kaynak_tipi: tagSource(domain), tarih: fmtDate(a.publishedAt) };
-    });
-
-  if (!articles.length) return jsonResponse({ error: "Haber bulunamadı" }, 422);
-
+  const articles = destekciArticles.slice(0, 15);
   const DESTEKCI_TYPES = ["supports", "opposes", "sanctions", "supplies", "funded_by", "negotiates", "mediates"];
   const entityList = RU_ENTITIES.map(e => `- ${e.id}  (${e.canonical_name})`).join("\n");
   const prompt = buildDestekciPrompt(articles, entityList, DESTEKCI_TYPES.join(", "));
@@ -513,6 +570,7 @@ async function handleDestekciGuncelle(env) {
   const errors = validateEdges(result.extracted_edges || []);
   const output = {
     date: today,
+    news_source: destekci_news_source,
     source_article_count: articles.length,
     extracted_edges: result.extracted_edges || [],
     unresolved_entities: result.unresolved_entities || [],
