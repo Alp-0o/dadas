@@ -8,3 +8,4 @@ wrangler.jsonc
 !.dev.vars.example
 .env*
 !.env.example
+rasad_context_v2.md

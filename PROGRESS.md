@@ -1,55 +1,6 @@
-# RASAD — Proje Bağlam Belgesi v2
-*Yeni Claude Code oturumlarının başında bu dosyayı yapıştır.*
-*Çekirdek mimari belgesi: `rasad_cekirdek_mimari_v1.md.docx` (yerel ~/Downloads — gizli, commit edilmedi)*
+> Yeni oturum başında: CLAUDE.md otomatik okunur. PROGRESS.md'yi de oku ve güncel tut.
 
----
-
-## 1. Projenin Özü
-
-Rasad, jeopolitika/ekonomi/finans olayları arasındaki gizli bağlantıları AI yardımıyla ortaya çıkaran bir istihbarat platformu.
-
-**Canlı site:** `alp-0o.github.io/dadas` | **Repo:** `github.com/Alp-0o/dadas` (public)
-**Çalışma dizini:** `/Users/fikretozdemir/rasad`
-
----
-
-## 2. Teknik Altyapı
-
-### Dosya Yapısı
-```
-rasad/
-  index.html                         ← Ana sayfa
-  dosya/rusya-ukrayna.html           ← Dosya sayfası (10 bölüm)
-  cloudflare-worker/worker.js        ← TÜM backend mantığı
-  data/dossiers/rusya-ukrayna/
-    entities.json                    ← 17 düğüm
-    edges.json                       ← 6 kenar (2 show_in_flow:false, 1 inferred)
-    sources.json                     ← 3 kaynak düğümü
-  scripts/
-    test-edge-extraction.js          ← Edge extraction lokal test scripti
-```
-
-### Cloudflare Worker
-**URL:** `https://r.rasad-news-proxy.workers.dev/`
-**Deploy:** `cd cloudflare-worker && wrangler deploy --config wrangler.toml`
-**Secrets:** `GNEWS_API_KEY`, `METALS_API_KEY`, `GROQ_API_KEY` (Cloudflare panelinde)
-**KV:** `RASAD_CACHE` binding — günlük cache + kenar log
-**CORS:** `"Access-Control-Allow-Origin": "*"` (wildcard, local preview dahil)
-
-**Endpoint'ler:**
-| Endpoint | İşlev | Model |
-|---|---|---|
-| `/news` | GNews haber çek | — |
-| `/metals` | metals.dev altın/gümüş | — |
-| `/news-comment` | Çatışma AI yorumu | llama-3.1-8b-instant |
-| `/metals-comment` | Emtia AI yorumu | llama-3.1-8b-instant |
-| `/rusya-ukrayna-content` | Dosya AI içeriği (10 bölüm) | llama-3.3-70b-versatile |
-| `/rusya-ukrayna-taraflar` | Grafik tabanlı taraflar (statik+dinamik birleştirilmiş) | — |
-| `/rusya-ukrayna-kenar-cikart` | Haber → kenar çıkarımı | llama-3.3-70b-versatile |
-| `/rusya-ukrayna-kenarlar` | Temel+güncel bağlantılar (dedup'lu) | — |
-| `/rusya-ukrayna-destekci-guncelle` | Taraf/destekçi kenar çıkarımı | llama-3.3-70b-versatile |
-| `/rusya-ukrayna-etkilenme-guncelle` | Affects kenar çıkarımı | llama-3.3-70b-versatile |
-| `/kenar-log` | Birikmiş kenar log + entity frekansı | — (KV'den) |
+# RASAD — İlerleme ve Durum Belgesi
 
 ---
 
@@ -78,11 +29,13 @@ rasad/
 - Validation: entity ID ve type doğrulama — hatalı kenar cache'e yazılmıyor
 - Prompt kuralları: somut eylem zorunlu (söylem/alıntı kenar üretemez)
 - **GNews query önemli:** Kısa sorgular kullan (max 4-5 kelime). Çok-kelimeli OR sorguları GNews'te sıfır sonuç döndürür.
+- **Yön kuralı (2026-06-24):** `supports` / `funded_by` / `supplies` / `defends` ilişkilerinde `source_id` = destekleyen, `target_id` = desteklenen olmalı. Hem `/rusya-ukrayna-kenar-cikart` hem `/rusya-ukrayna-destekci-guncelle` prompt'larına eklendi.
 
 ### KV Anahtarları
-- `ru-content-{today}` — AI içeriği (10 bölüm), TTL: 86400s
+- `rusya-ukrayna-content-{today}` — AI içeriği (10 bölüm), TTL: 86400s
 - `kenar-cikart-{today}` — /rusya-ukrayna-kenar-cikart sonuçları
 - `destekci-kenarlar-{today}` — /rusya-ukrayna-destekci-guncelle sonuçları
+- `etkilenme-kenarlar-{today}` — /rusya-ukrayna-etkilenme-guncelle sonuçları
 - `kenar-log` — birikimli kenar log
 - KV temizleme: `wrangler kv key delete "KEY" --binding RASAD_CACHE --config cloudflare-worker/wrangler.toml --remote`
 
@@ -122,6 +75,8 @@ rasad/
 | metals.dev 530 hatası | Aktif — Alpha Vantage'a geçilecek (bkz. P3) |
 | GDELT Worker'a taşınmadı | Planlandı — lokal script hazır (bkz. P2) |
 | Destekci endpoint az kenar üretiyor | GNews "Russia Ukraine support alliance" ile sadece NATO dönüyor; sorgu iyileştirilebilir |
+| RU_ENTITIES/RU_EDGES çift kopya sorunu | worker.js içinde sabit kod olarak VE entities.json/edges.json'da ayrı dosya olarak duruyor — tek kaynak gerçeklik ilkesine aykırı, henüz çözülmedi |
+| org:nato supports country:usa kenarı yön ihlali | 2026-06-24'te tespit edildi — yön kuralı ihlali olduğu için KV'de flaglandı, silinmedi |
 
 ---
 
@@ -147,20 +102,6 @@ Worker'a `ALPHA_VANTAGE_KEY` secret ekle, free tier günde 25 istek.
 
 ---
 
-## 7. Ortam
+## 9. Operasyonel Notlar
 
-```bash
-# Node.js: nvm v26.3.1 | Wrangler: kurulu, alpomerozdemir@gmail.com
-# Git push: HTTPS + Personal Access Token
-# Deploy: cd cloudflare-worker && wrangler deploy --config wrangler.toml
-# KV cache temizleme: wrangler kv key delete "KEY" --binding RASAD_CACHE --config cloudflare-worker/wrangler.toml --remote
-# Local preview: http://localhost:3333 (npx serve -l 3333 .)
-```
-
-## 8. Oturum Kuralı
-
-1. Bu dosyayı yapıştır
-2. "Bu oturumda sadece şunu yapacağız: [tek hedef]" de
-3. Her adımda "neden bu yolu seçtin" diye sor
-4. Kodu anlamadan onaylama
-5. Oturum sonunda bu dosyayı güncelle + sıkıştır
+- **2026-06-24:** Git geçmişindeki tüm commit yazar isimleri (Fikret Özdemir, Ömer Alp Özdemir) `git filter-repo` ile `Alp` olarak değiştirildi, force-push yapıldı. `Alp-0o` / `alpomerozdemir@gmail.com` kombinasyonuna dokunulmadı.
