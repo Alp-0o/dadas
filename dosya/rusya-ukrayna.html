@@ -170,12 +170,11 @@ header span { font-size: 12px; color: #666; }
     <div class="sidebar-title">İçindekiler</div>
     <nav>
       <a href="#ozet"><span class="num">01</span>Olayın Özeti<span class="ai-tag">AI</span></a>
-      <a href="#destekcilder"><span class="num">02</span>Taraflar &amp; Destekçiler</a>
+      <a href="#taraflar"><span class="num">02</span>Taraflar ve Destekçiler</a>
       <a href="#sebepler"><span class="num">03</span>Çıkış Sebepleri</a>
       <a href="#icraatler"><span class="num">04</span>İcraatler</a>
       <a href="#son-durum"><span class="num">05</span>Son Durum<span class="ai-tag">AI</span></a>
       <a href="#kronoloji"><span class="num">06</span>Zincirleme Haberler<span class="ai-tag">AI</span></a>
-      <a href="#destekcilder"><span class="num">07</span>Destekçiler</a>
       <a href="#etkilenenler"><span class="num">08</span>Etkilenenler<span class="ai-tag">Grafik</span></a>
       <a href="#senaryolar"><span class="num">09</span>Gelecek Senaryoları<span class="ai-tag">AI</span></a>
       <a href="#baglantılar"><span class="num">10</span>Keşfedilen Bağlantılar<span class="ai-tag">Grafik</span></a>
@@ -193,6 +192,28 @@ header span { font-size: 12px; color: #666; }
         <span class="section-ai-badge">AI · Günlük</span>
       </div>
       <p class="ai-text loading" id="ozet-text">Yükleniyor...</p>
+    </div>
+
+    <!-- 2. TARAFLAR VE DESTEKÇİLER — GRAFİK -->
+    <div class="section" id="taraflar">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">Taraflar ve Destekçiler</span>
+        <span class="section-graph-badge">Grafik · Statik</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e07070;margin-bottom:10px">Rusya Tarafı</div>
+          <div id="rusya-entity-card"><div class="taraf-main-card rusya-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
+          <div class="destekci-list" id="rusya-taraf-list" style="margin-top:10px"></div>
+        </div>
+        <div>
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#70a8e0;margin-bottom:10px">Ukrayna Tarafı</div>
+          <div id="ukrayna-entity-card"><div class="taraf-main-card ukrayna-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
+          <div class="destekci-list" id="ukrayna-taraf-list" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="graf-notu" id="destekci-graf-notu"></div>
     </div>
 
     <!-- 3. SEBEPLER — Manuel -->
@@ -233,28 +254,6 @@ header span { font-size: 12px; color: #666; }
       <div class="kronoloji" id="kronoloji-list">
         <div class="kronoloji-item"><span class="kronoloji-tarih">—</span><span class="kronoloji-icerik loading">Yükleniyor...</span></div>
       </div>
-    </div>
-
-    <!-- 7. TARAFLAR & DESTEKÇİLER — GRAFİK -->
-    <div class="section" id="destekcilder">
-      <div class="section-header">
-        <span class="section-num">07</span>
-        <span class="section-title">Taraflar &amp; Destekçiler</span>
-        <span class="section-graph-badge">Grafik · Statik</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div>
-          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#e07070;margin-bottom:10px">Rusya Tarafı</div>
-          <div id="rusya-entity-card"><div class="taraf-main-card rusya-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
-          <div class="destekci-list" id="rusya-taraf-list" style="margin-top:10px"></div>
-        </div>
-        <div>
-          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#70a8e0;margin-bottom:10px">Ukrayna Tarafı</div>
-          <div id="ukrayna-entity-card"><div class="taraf-main-card ukrayna-main loading-card"><p class="loading">Yükleniyor...</p></div></div>
-          <div class="destekci-list" id="ukrayna-taraf-list" style="margin-top:10px"></div>
-        </div>
-      </div>
-      <div class="graf-notu" id="destekci-graf-notu"></div>
     </div>
 
     <!-- 8. ETKİLENENLER — AI -->
