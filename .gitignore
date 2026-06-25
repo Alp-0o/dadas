@@ -9,3 +9,5 @@ wrangler.jsonc
 .env*
 !.env.example
 rasad_context_v2.md
+CLAUDE.md
+PROGRESS.md
