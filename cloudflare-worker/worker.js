@@ -608,8 +608,8 @@ async function handleDestekciGuncelle(env) {
   if (cached) return jsonResponse({ ...JSON.parse(cached), cached: true });
 
   // GDELT dene → 429/hata durumunda GNews'e düş
-  let destekciArticles = await gdeltFetch("Russia Ukraine support", 75);
-  let destekci_news_source = "gdelt";
+  let destekciArticles = await gdeltGkgFetch();
+  let destekci_news_source = "gdelt-gkg";
   if (!destekciArticles || !destekciArticles.length) {
     destekci_news_source = "gnews";
     destekciArticles = await gnewsFetch("Russia Ukraine support alliance", 10, env);
