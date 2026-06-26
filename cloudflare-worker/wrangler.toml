@@ -1,8 +1,0 @@
-name = "r"
-main = "worker.js"
-compatibility_date = "2024-11-01"
-account_id = "c31d176372ef80ad1f2cb6adb0c55863"
-
-[[kv_namespaces]]
-binding = "RASAD_CACHE"
-id = "0ee8034fa67844708b9dd0b542052edf"
